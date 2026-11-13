@@ -215,7 +215,7 @@ const $ = id => document.getElementById(id);
 /* ===== GATEWAY KE PLC PYTHON (WebSocket) =====
    Isi alamat gateway di bawah, atau buka halaman dengan ?gw=wss://plc.domainanda.com/ws
    Kosong / server mati = otomatis memakai emulator PLC lokal di browser. */
-const GATEWAY_URL = new URLSearchParams(location.search).get('gw') || '';   // contoh: 'wss://plc.domainanda.com/ws'
+const GATEWAY_URL = new URLSearchParams(location.search).get('gw') || 'wss://sisplc.ibnuyuliarto.my.id/ws';
 let ws = null, remote = false, S = null;
 function setConn() {
   $('conn').className = remote ? 'on' : '';
