@@ -144,6 +144,7 @@ function updatePLCConfig() {
   durConfig.y = parseInt($('cfg-y').value) || 3;
   durConfig.ar = parseInt($('cfg-ar').value) || 1;
   $('cyc').textContent = `Satu siklus penuh 4 arah = ${4 * (durConfig.g + durConfig.y + durConfig.ar)} detik`;
+  sendCfg();
 }
 
 function getPhaseDur(faseIdx) {
@@ -210,13 +211,41 @@ function localCmd(i, v) {
 }
 
 const $ = id => document.getElementById(id);
-$('bS').onclick = () => localCmd(0, 1);
-$('bT').onclick = () => localCmd(1, 1);
-$('bA').onclick = () => localCmd(2, !local.auto);
-$('bD').onclick = () => localCmd(3, !local.emg);
-$('bN').onclick = () => localCmd(4, 1);
+
+/* ===== GATEWAY KE PLC PYTHON (WebSocket) =====
+   Isi alamat gateway di bawah, atau buka halaman dengan ?gw=wss://plc.domainanda.com/ws
+   Kosong / server mati = otomatis memakai emulator PLC lokal di browser. */
+const GATEWAY_URL = new URLSearchParams(location.search).get('gw') || '';   // contoh: 'wss://plc.domainanda.com/ws'
+let ws = null, remote = false, S = null;
+function setConn() {
+  $('conn').className = remote ? 'on' : '';
+  $('conn').lastChild.textContent = remote ? 'Terhubung ke PLC Python (WebSocket)' : 'Mode lokal (emulator PLC 4 arah)';
+}
+function sendCfg() {
+  if (remote && ws && ws.readyState === 1) ws.send(JSON.stringify({ cfg: durConfig }));
+}
+function connect() {
+  if (!GATEWAY_URL) return;
+  try {
+    ws = new WebSocket(GATEWAY_URL);
+    ws.onopen = () => { remote = true; setConn(); sendCfg(); };
+    ws.onmessage = e => { S = JSON.parse(e.data); };
+    ws.onclose = () => { remote = false; S = null; setConn(); setTimeout(connect, 3000); };
+    ws.onerror = () => ws.close();
+  } catch (e) { setTimeout(connect, 3000); }
+}
+function cmd(i, v) {
+  if (remote && ws && ws.readyState === 1) ws.send(JSON.stringify({ coil: i, v: v ? 1 : 0 }));
+  else localCmd(i, v);
+}
+$('bS').onclick = () => cmd(0, 1);
+$('bT').onclick = () => cmd(1, 1);
+$('bA').onclick = () => cmd(2, !cur().auto);
+$('bD').onclick = () => cmd(3, !cur().emg);
+$('bN').onclick = () => cmd(4, 1);
 
 function cur() {
+  if (remote && S) return S;
   return {
     fase: local.fase, 
     rem: Math.max(0, getPhaseDur(local.fase) - local.et), 
@@ -571,13 +600,14 @@ function drawCars() {
 let last = performance.now(), acc = 0;
 function frame(t) {
   const dt = Math.min(.1, (t - last) / 1000); last = t;
-  acc += dt; while (acc >= .1) { plcScan(.1); acc -= .1; }
+  acc += dt; while (acc >= .1) { if (!(remote && S)) plcScan(.1); acc -= .1; }
   const s = cur();
   hmi(s); moveCars(dt, s);
   drawScene(); drawCars(); drawTrafficLights(s.out);
   requestAnimationFrame(frame);
 }
 updatePLCConfig();
+connect();
 requestAnimationFrame(frame);
 </script>
 </body>
