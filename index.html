@@ -2,30 +2,53 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulasi PLC & HMI — Lampu Lalu Lintas 4 Arah</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulasi PLC & HMI — Grid 2x2 Lampu Lalu Lintas 4 Persimpangan</title>
 <style>
 :root{--bg:#1d232c;--panel:#2a323d;--ink:#e8edf2;--mut:#93a1b1;--g:#6fdc8c;--r:#ef6b66;--b:#4aa8ff;--y:#f5d54a}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-header{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #38424f}
-h1{font-size:18px;margin:0;font-weight:600}
-#conn{font-size:13px;color:var(--mut);display:flex;align-items:center;gap:8px}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #38424f;background:#171c23}
+h1{font-size:17px;margin:0;font-weight:600}
+#conn{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:8px}
 #conn i{width:10px;height:10px;border-radius:50%;background:#777;display:inline-block}
 #conn.on i{background:var(--g)}
-main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(340px,1fr);gap:16px;padding:16px;max-width:1420px;margin:auto}
-@media(max-width:980px){main{grid-template-columns:1fr}}
-canvas{width:100%;height:auto;border-radius:10px;background:#cdd7c4;display:block}
-.panel{background:var(--panel);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px}
+main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(350px,1fr);gap:14px;padding:14px;max-width:1600px;margin:auto}
+@media(max-width:1020px){main{grid-template-columns:1fr}}
+
+#stage{position:relative;border-radius:10px;overflow:hidden;background:#cdd7c4;border:1px solid #38424f}
+canvas#cv{width:100%;height:auto;aspect-ratio:2200/1650;display:block;touch-action:none;cursor:grab}
+canvas#cv.dragging{cursor:grabbing}
+#c3{display:none;width:100%;aspect-ratio:2200/1650;border-radius:10px;overflow:hidden;touch-action:none;cursor:grab;background:#bcd9f2}
+#c3.dragging{cursor:grabbing}
+
+.topbar{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;z-index:3;pointer-events:none}
+.topbar > *{pointer-events:auto;display:flex;gap:4px;flex-wrap:wrap;background:rgba(20,32,43,.88);padding:4px;border-radius:8px;backdrop-filter:blur(4px)}
+.topbar button{padding:6px 10px;background:transparent;color:#e8edf2;border-radius:6px;font-size:12px;font-weight:600}
+.topbar button.on{background:var(--b);color:#14202b}
+.topbar button:hover{background:rgba(255,255,255,.12)}
+.topbar button.on:hover{background:var(--b)}
+.topbar button.muted{color:#f59e0b}
+.topbar button.pov-on{background:#22c55e;color:#0f172a}
+
+#hint3{position:absolute;left:12px;bottom:10px;font-size:12px;color:#14202b;background:rgba(255,255,255,.82);padding:4px 10px;border-radius:6px;z-index:3;pointer-events:none}
+
+.panel{background:var(--panel);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;border:1px solid #38424f}
+.int-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.int-tabs button{padding:8px 4px;background:#1a202c;color:var(--mut);border:1px solid #3c4654;border-radius:7px;font-size:12px;font-weight:700}
+.int-tabs button.on{background:var(--b);color:#14202b;border-color:var(--b)}
+
 .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;font-size:11px;font-weight:600}
-.sig{margin:6px auto;width:40px;padding:6px;background:#1a202c;border-radius:6px;display:flex;flex-direction:column;gap:5px}
-.sig b{display:block;width:26px;height:26px;border-radius:50%;margin:auto;opacity:.2}
+.sig{margin:5px auto 0;width:36px;padding:5px;background:#1a202c;border-radius:6px;display:flex;flex-direction:column;gap:4px}
+.sig b{display:block;width:22px;height:22px;border-radius:50%;margin:auto;opacity:.2}
 .sig .r{background:#ff4b45}.sig .y{background:#ffc83a}.sig .g{background:#4ee07a}
 .sig b.on{opacity:1;box-shadow:0 0 10px currentColor}
 .sig .r.on{color:#ff4b45}.sig .y.on{color:#ffc83a}.sig .g.on{color:#4ee07a}
-#fase{text-align:center;margin:4px 0 8px;font-size:15px;font-weight:bold;color:var(--b)}
-.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-button{border:0;border-radius:8px;padding:10px 4px;font:600 13px inherit;font-family:inherit;color:#14202b;cursor:pointer}
+
+#fase{text-align:center;padding:6px 8px;border-radius:6px;background:#1a202c;font-size:13px;font-weight:700;color:var(--b)}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+button{border:0;border-radius:8px;padding:9px 5px;font:600 12px/1.2 inherit;color:#14202b;cursor:pointer;transition:filter .12s,transform .08s}
+button:hover{filter:brightness(1.06)}
 button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 button:active{transform:translateY(1px)}
 #bS{background:var(--g)}#bT{background:var(--r)}#bA{background:var(--b)}#bD{background:var(--y)}
@@ -33,119 +56,205 @@ button.act{box-shadow:0 0 0 3px #fff inset}
 #bN{grid-column:1/-1;background:#556273;color:#fff}
 #bN[disabled]{opacity:.4;cursor:not-allowed}
 
-.ctrl-box{background:#1a202c;padding:10px 12px;border-radius:8px;font-size:12px;display:flex;flex-direction:column;gap:8px}
-.ctrl-title{font-size:11px;font-weight:bold;color:var(--mut);text-transform:uppercase;letter-spacing:0.5px}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ctrl-box{background:#1a202c;padding:9px 11px;border-radius:8px;font-size:12px;display:flex;flex-direction:column;gap:7px;border:1px solid #2e3744}
+.ctrl-title{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
 .form-group{display:flex;flex-direction:column;gap:3px}
 .form-group label{font-size:11px;color:var(--ink)}
-.form-group input, .form-group select{background:#2a323d;border:1px solid #4a5563;color:#fff;padding:5px;border-radius:4px;font-size:12px;text-align:center}
+.form-group input,.form-group select{background:#2a323d;border:1px solid #4a5563;color:#fff;padding:5px;border-radius:5px;font-size:12px;text-align:center}
+.form-group select{text-align:left}
 
-.io{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px}
-.io h3{grid-column:1/-1;margin:2px 0 0;font-size:11px;color:var(--mut);font-weight:600}
-.io div{display:flex;align-items:center;gap:6px}
-.io i{width:9px;height:9px;border-radius:50%;background:#4a5563;flex:none}
-.io i.on{background:var(--g)}
-#itl{font-size:12px;color:var(--mut)}
+.io{display:grid;grid-template-columns:1fr 1.2fr;gap:4px 10px;font-size:11px;background:#1a202c;padding:9px 11px;border-radius:8px;border:1px solid #2e3744}
+.io h3{margin:0 0 4px;font-size:11px;color:var(--mut);font-weight:700}
+.io div{display:flex;align-items:center;gap:5px}
+.io i{width:8px;height:8px;border-radius:50%;background:#4a5563;flex:none}
+.io i.on{background:var(--g);box-shadow:0 0 6px var(--g)}
+#itl{font-size:12px;color:var(--g);font-weight:600;text-align:center}
 #itl.bad{color:var(--r);font-weight:700}
-.btn-action-danger{background:#ff4b45;color:#fff;padding:8px;border-radius:6px;font-weight:bold;cursor:pointer;border:none;}
-.btn-action-danger:hover{background:#d93833;}
-.btn-action-clear{background:#4a5568;color:#fff;padding:8px;border-radius:6px;font-weight:bold;cursor:pointer;border:none;}
-.btn-action-clear:hover{background:#3a4250;}
+.btn-action-danger{background:#ff4b45;color:#fff;padding:7px;border-radius:6px;font-weight:700}
+.btn-action-clear{background:#4a5568;color:#fff;padding:7px;border-radius:6px;font-weight:700}
 @media(prefers-reduced-motion:reduce){button:active{transform:none}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Simulasi PLC & HMI — Lampu Lalu Lintas 4 Arah</h1>
-  <div id="conn"><i></i><span>Mode lokal (emulator PLC 4 arah)</span></div>
+  <h1>Simulasi PLC &amp; HMI — Grid 2x2 Lampu Lalu Lintas (4 Persimpangan)</h1>
+  <div id="conn"><i></i><span>Mode lokal (4 PLC Grid 2x2)</span></div>
 </header>
+
 <main>
-  <canvas id="cv" width="1000" height="640" aria-label="Animasi persimpangan"></canvas>
+  <div id="stage">
+    <div class="topbar">
+      <div>
+        <button id="v2" class="on">2D</button>
+        <button id="v3">3D</button>
+        <button id="bPov" title="Kamera POV Mengikuti Jalan">POV Jalan</button>
+        <button id="bSwitchPov" title="Ganti Kendaraan atau Jalur POV">Ganti POV</button>
+        <button id="zIn" title="Perbesar">+</button>
+        <button id="zOut" title="Perkecil">−</button>
+        <button id="zReset" title="Reset Pandangan">Reset</button>
+        <button id="bRefresh" title="Refresh Simulasi">Refresh</button>
+      </div>
+      <div>
+        <button id="fAll" class="on">Grid 2x2</button>
+        <button id="fS1">S1</button>
+        <button id="fS2">S2</button>
+        <button id="fS3">S3</button>
+        <button id="fS4">S4</button>
+      </div>
+    </div>
+
+    <canvas id="cv" width="2200" height="1650" aria-label="Simulasi persimpangan 2x2"></canvas>
+    <div id="c3"></div>
+    <div id="hint3">Seret kiri putar · seret kanan/2 jari geser bebas · WASD/Panah gerak · scroll/cubit zoom</div>
+    <div id="pedStats" style="position:absolute;right:12px;bottom:10px;font-size:12px;color:#e8edf2;background:rgba(20,32,43,.84);padding:4px 10px;border-radius:6px;z-index:3;pointer-events:none;">Pejalan kaki: 0</div>
+  </div>
+
   <section class="panel">
-    <!-- Indikator HMI 4 Lampu -->
+    <!-- Pemilih Persimpangan HMI -->
+    <div class="int-tabs">
+      <button id="tab-0" class="on" onclick="selectInt(0)">S1 (Kiri Atas)</button>
+      <button id="tab-1" onclick="selectInt(1)">S2 (Kanan Atas)</button>
+      <button id="tab-2" onclick="selectInt(2)">S3 (Kiri Bawah)</button>
+      <button id="tab-3" onclick="selectInt(3)">S4 (Kanan Bawah)</button>
+    </div>
+
+    <!-- Indikator HMI 4 Lampu pada Simpang Terpilih -->
     <div class="cols">
       <div>UTARA<div class="sig" id="sig-n"><b class="r"></b><b class="y"></b><b class="g"></b></div></div>
       <div>TIMUR<div class="sig" id="sig-e"><b class="r"></b><b class="y"></b><b class="g"></b></div></div>
       <div>SELATAN<div class="sig" id="sig-s"><b class="r"></b><b class="y"></b><b class="g"></b></div></div>
       <div>BARAT<div class="sig" id="sig-w"><b class="r"></b><b class="y"></b><b class="g"></b></div></div>
     </div>
-    
+
     <div id="fase">—</div>
-    
-    <!-- Tombol Operasional -->
+
+    <!-- Target Perintah & Tombol Operasional PLC -->
+    <div class="form-group">
+      <label for="cfg-cmd-scope">Target Perintah Tombol PLC</label>
+      <select id="cfg-cmd-scope">
+        <option value="SELECTED" selected>Hanya Simpang Terpilih (S1–S4)</option>
+        <option value="ALL">Semua 4 Persimpangan Sekaligus</option>
+      </select>
+    </div>
+
     <div class="btns">
-      <button id="bS">START</button><button id="bT">STOP</button>
-      <button id="bA">AUTO</button><button id="bD">DARURAT</button>
+      <button id="bS">START</button>
+      <button id="bT">STOP</button>
+      <button id="bA">AUTO</button>
+      <button id="bD">DARURAT</button>
       <button id="bN">LANGKAH (mode manual)</button>
     </div>
 
-    <!-- Pengatur Durasi Lampu -->
+    <!-- Pengatur Durasi & Sinkronisasi PLC -->
     <div class="ctrl-box">
-      <div class="ctrl-title">Pengatur Durasi Lampu (Detik)</div>
+      <div class="ctrl-title">Siklus Waktu &amp; Sinkronisasi PLC</div>
       <div class="form-grid">
         <div class="form-group">
-          <label for="cfg-g">Hijau</label>
-          <input type="number" id="cfg-g" value="20" min="2" max="60" onchange="updatePLCConfig()">
+          <label for="cfg-g">Hijau (s)</label>
+          <input type="number" id="cfg-g" value="18" min="2" max="60" onchange="updatePLCConfig()">
         </div>
         <div class="form-group">
-          <label for="cfg-y">Kuning</label>
+          <label for="cfg-y">Kuning (s)</label>
           <input type="number" id="cfg-y" value="3" min="1" max="10" onchange="updatePLCConfig()">
         </div>
         <div class="form-group">
-          <label for="cfg-ar">All Red Transisi</label>
+          <label for="cfg-ar">All Red (s)</label>
           <input type="number" id="cfg-ar" value="1" min="0" max="10" onchange="updatePLCConfig()">
         </div>
+      </div>
+      <div class="form-group">
+        <label for="cfg-sync">Mode Koordinasi Antar PLC</label>
+        <select id="cfg-sync" onchange="applySyncMode()">
+          <option value="GREEN_WAVE" selected>Green Wave (Offset Bertahap antar Simpang)</option>
+          <option value="SYNC">Serempak (Fase Identik 4 Simpang)</option>
+          <option value="ALTERNATE">Bergantian (S1 &amp; S4 vs S2 &amp; S3 Berlawanan)</option>
+          <option value="INDEPENDENT">Independen (Scan Waktu Masing-Masing PLC)</option>
+        </select>
       </div>
       <div style="font-size:11px;color:var(--mut);text-align:center;"><span id="cyc"></span></div>
     </div>
 
-    <!-- Opsi Aturan Belok Kiri Jalan Terus -->
+    <!-- Rambu Belok Kanan -->
     <div class="ctrl-box">
-      <div class="ctrl-title">Pengaturan Rambu Belok Kanan</div>
+      <div class="ctrl-title">Aturan Lalu Lintas &amp; Simulasi</div>
       <div class="form-group">
-        <label for="cfg-left-turn">Aturan Belok Kanan Persimpangan</label>
+        <label for="cfg-left-turn">Rambu Belok Kanan</label>
         <select id="cfg-left-turn">
-          <option value="ALWAYS" selected>Ada Rambu "Belok Kanan Jalan Terus" (Boleh Berbelok Langsung)</option>
-          <option value="LIGHT">Ikuti Lampu Isyarat (Wajib Berhenti Saat Lampu Merah)</option>
+          <option value="ALWAYS" selected>Belok Kanan Jalan Terus (Boleh Berbelok Langsung)</option>
+          <option value="LIGHT">Ikuti Lampu Isyarat (Berhenti Saat Merah)</option>
         </select>
       </div>
-    </div>
-
-    <!-- Simulasi Kepadatan & Skenario Tabrakan -->
-    <div class="ctrl-box">
-      <div class="ctrl-title">Simulasi Kepadatan & Penerobos Merah</div>
-      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="form-grid-2">
         <div class="form-group">
-          <label for="cfg-density">Kepadatan Lalu Lintas</label>
+          <label for="cfg-density">Kepadatan Kendaraan</label>
           <select id="cfg-density" onchange="updateDensity()">
             <option value="LOW">Rendah (Sepi)</option>
             <option value="MID" selected>Sedang (Normal)</option>
-            <option value="HIGH">Tinggi (Macet)</option>
+            <option value="HIGH">Tinggi (Padat)</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Kecelakaan Tabrakan</label>
-          <button id="bClearCrash" class="btn-action-clear" onclick="clearCrashedVehicles()">Bersihkan Bangkai (0)</button>
+          <label>Bangkai Tabrakan</label>
+          <button id="bClearCrash" class="btn-action-clear" onclick="clearCrashedVehicles()">Bersihkan (0)</button>
         </div>
       </div>
-      <button id="bTriggerViolator" class="btn-action-danger" onclick="triggerSingleViolator()">Kirim 1 Mobil Penerobos Merah</button>
     </div>
 
     <div class="io" id="io"></div>
-    <div id="itl">Interlock: aman (1 Hijau saja)</div>
+    <div id="itl">Interlock: Aman — 1 Lampu Hijau Aktif</div>
   </section>
 </main>
-<script>
-/* ===== PLC LOGIC CONFIG & EMULATOR ===== */
-let durConfig = { g: 20, y: 3, ar: 1 };
 
-function updatePLCConfig() {
-  durConfig.g = parseInt($('cfg-g').value) || 20;
-  durConfig.y = parseInt($('cfg-y').value) || 3;
-  durConfig.ar = parseInt($('cfg-ar').value) || 1;
-  $('cyc').textContent = `Satu siklus penuh 4 arah = ${4 * (durConfig.g + durConfig.y + durConfig.ar)} detik`;
-  sendCfg();
+<script>
+/* ===== KONFIGURASI GRID 2x2 JARAK JAUH ===== */
+const $ = id => document.getElementById(id);
+const W = 2200, H = 1650;
+const COL_X = [420, 1780];   // jarak horizontal antar pusat simpang = 1360 px
+const ROW_Y = [380, 1270];   // jarak vertikal antar pusat simpang = 890 px
+const HALF = 82, STOP = 106;
+const LN = [20, 60];         // k=0 lajur dalam (dekat median), k=1 lajur luar
+
+// 4 persimpangan dalam petak 2x2 (2 di atas, 2 di bawah)
+const INTS = [
+  { id: 0, short: 'S1', name: 'Simpang 1 (Kiri Atas)',  cx: COL_X[0], cy: ROW_Y[0], offsetSec: 0 },
+  { id: 1, short: 'S2', name: 'Simpang 2 (Kanan Atas)', cx: COL_X[1], cy: ROW_Y[0], offsetSec: 4 },
+  { id: 2, short: 'S3', name: 'Simpang 3 (Kiri Bawah)', cx: COL_X[0], cy: ROW_Y[1], offsetSec: 4 },
+  { id: 3, short: 'S4', name: 'Simpang 4 (Kanan Bawah)',cx: COL_X[1], cy: ROW_Y[1], offsetSec: 8 }
+];
+
+let selectedInt = 0;
+let durConfig = { g: 18, y: 3, ar: 1 };
+
+// Arah gerak: 0 = ke bawah (dari utara), 1 = ke atas (dari selatan), 2 = ke kanan (dari barat), 3 = ke kiri (dari timur)
+const DIR = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+const DEST = { RIGHT: [3, 2, 0, 1], LEFT: [2, 3, 1, 0] };
+
+// Koordinat lajur sejajar sumbu utama pada grid 2x2
+function laneC(d, k, intId = 0) {
+  const s = INTS[intId] || INTS[0];
+  if (d === 0) return s.cx - LN[k]; // bergerak ke bawah -> sisi kiri jalan
+  if (d === 1) return s.cx + LN[k]; // bergerak ke atas  -> sisi kanan jalan
+  if (d === 2) return s.cy + LN[k]; // bergerak ke kanan-> sisi bawah jalan
+  return s.cy - LN[k];              // bergerak ke kiri -> sisi atas jalan
 }
+
+/* ===== EMULATOR PLC PER PERSIMPANGAN (4 PLC TERPISAH) ===== */
+const OUTS_4PHASE = [
+  [0,0,1,  1,0,0,  1,0,0,  1,0,0], // 0: Utara Hijau
+  [0,1,0,  1,0,0,  1,0,0,  1,0,0], // 1: Utara Kuning
+  [1,0,0,  1,0,0,  1,0,0,  1,0,0], // 2: All Red
+  [1,0,0,  0,0,1,  1,0,0,  1,0,0], // 3: Timur Hijau
+  [1,0,0,  0,1,0,  1,0,0,  1,0,0], // 4: Timur Kuning
+  [1,0,0,  1,0,0,  1,0,0,  1,0,0], // 5: All Red
+  [1,0,0,  1,0,0,  0,0,1,  1,0,0], // 6: Selatan Hijau
+  [1,0,0,  1,0,0,  0,1,0,  1,0,0], // 7: Selatan Kuning
+  [1,0,0,  1,0,0,  1,0,0,  1,0,0], // 8: All Red
+  [1,0,0,  1,0,0,  1,0,0,  0,0,1], // 9: Barat Hijau
+  [1,0,0,  1,0,0,  1,0,0,  0,1,0], // 10: Barat Kuning
+  [1,0,0,  1,0,0,  1,0,0,  1,0,0]  // 11: All Red
+];
 
 function getPhaseDur(faseIdx) {
   const mod = faseIdx % 3;
@@ -154,116 +263,258 @@ function getPhaseDur(faseIdx) {
   return durConfig.ar;
 }
 
-// Matriks Output 4 Fase (N, E, S, W)
-const OUTS_4PHASE = [
-  [0,0,1,  1,0,0,  1,0,0,  1,0,0], // 0: N_G
-  [0,1,0,  1,0,0,  1,0,0,  1,0,0], // 1: N_Y
-  [1,0,0,  1,0,0,  1,0,0,  1,0,0], // 2: AR
-  [1,0,0,  0,0,1,  1,0,0,  1,0,0], // 3: E_G
-  [1,0,0,  0,1,0,  1,0,0,  1,0,0], // 4: E_Y
-  [1,0,0,  1,0,0,  1,0,0,  1,0,0], // 5: AR
-  [1,0,0,  1,0,0,  0,0,1,  1,0,0], // 6: S_G
-  [1,0,0,  1,0,0,  0,1,0,  1,0,0], // 7: S_Y
-  [1,0,0,  1,0,0,  1,0,0,  1,0,0], // 8: AR
-  [1,0,0,  1,0,0,  1,0,0,  0,0,1], // 9: W_G
-  [1,0,0,  1,0,0,  1,0,0,  0,1,0], // 10: W_Y
-  [1,0,0,  1,0,0,  1,0,0,  1,0,0]  // 11: AR
-];
+function getCycleTotal() {
+  return 4 * (durConfig.g + durConfig.y + durConfig.ar);
+}
 
-const local = {
-  fase: 0, et: 0, run: true, auto: true, emg: false, 
-  out: OUTS_4PHASE[0].slice(), itl: false, step: false
-};
+const plcStates = INTS.map((s, idx) => ({
+  id: idx,
+  fase: 0,
+  et: 0,
+  run: true,
+  auto: true,
+  emg: false,
+  out: OUTS_4PHASE[0].slice(),
+  itl: false,
+  step: false,
+  inputs: { queueLoad: 0, violatorDetected: false }
+}));
 
+function cycleElapsed(p) {
+  let t = p.et;
+  for (let f = 0; f < p.fase; f++) t += getPhaseDur(f);
+  return t;
+}
+
+function mapTimeToCycle(elapsedSec) {
+  const total = Math.max(1, getCycleTotal());
+  let t = ((elapsedSec % total) + total) % total;
+  for (let f = 0; f < 12; f++) {
+    const d = getPhaseDur(f);
+    if (t < d || f === 11) return { fase: f, et: Math.min(t, d) };
+    t -= d;
+  }
+  return { fase: 0, et: 0 };
+}
+
+function applySyncMode() {
+  const mode = $('cfg-sync').value;
+  const total = getCycleTotal();
+  if (mode === 'SYNC') {
+    const baseFase = plcStates[0].fase, baseEt = plcStates[0].et;
+    plcStates.forEach(p => { p.fase = baseFase; p.et = baseEt; });
+  } else if (mode === 'ALTERNATE') {
+    const half = total / 2;
+    const m0 = mapTimeToCycle(cycleElapsed(plcStates[0]));
+    const mAlt = mapTimeToCycle(cycleElapsed(plcStates[0]) + half);
+    [0, 3].forEach(i => { plcStates[i].fase = m0.fase; plcStates[i].et = m0.et; });
+    [1, 2].forEach(i => { plcStates[i].fase = mAlt.fase; plcStates[i].et = mAlt.et; });
+  } else if (mode === 'GREEN_WAVE') {
+    const m0 = mapTimeToCycle(cycleElapsed(plcStates[0]));
+    plcStates.forEach((p, i) => {
+      const m = mapTimeToCycle(cycleElapsed(plcStates[0]) + INTS[i].offsetSec);
+      p.fase = m.fase;
+      p.et = m.et;
+    });
+    plcStates[0].fase = m0.fase;
+    plcStates[0].et = m0.et;
+  }
+  sendCfg();
+}
+
+function updatePLCConfig() {
+  durConfig.g = Math.max(2, parseInt($('cfg-g').value, 10) || 18);
+  durConfig.y = Math.max(1, parseInt($('cfg-y').value, 10) || 3);
+  durConfig.ar = Math.max(0, parseInt($('cfg-ar').value, 10) || 1);
+  $('cyc').textContent = `1 siklus penuh = ${getCycleTotal()} detik · Jarak simpang: 1360 px (H) × 890 px (V)`;
+  applySyncMode();
+  sendCfg();
+}
+
+// Input sensor lapangan per simpang (antrean & deteksi pelanggaran lampu merah)
+function scanFieldInputs(dt) {
+  plcStates.forEach((p, idx) => {
+    const s = INTS[idx];
+    let nearby = 0;
+    let viol = false;
+    for (let i = 0; i < cars.length; i++) {
+      const cCar = cars[i];
+      if (cCar.crashed) continue;
+      if (Math.hypot(cCar.x - s.cx, cCar.y - s.cy) < 260) {
+        nearby++;
+        if (cCar.isViolator) viol = true;
+      }
+    }
+    p.inputs.queueLoad = Math.min(10, nearby);
+    p.inputs.violatorDetected = viol;
+  });
+}
+
+// Siklus scan PLC utama per persimpangan
 function plcScan(dt) {
-  const p = local, blink = Math.floor(performance.now() / 500) % 2;
-  p.itl = false;
+  scanFieldInputs(dt);
+  const blink = Math.floor(performance.now() / 500) % 2;
+  const syncMode = $('cfg-sync').value;
 
-  if (p.emg) {
-    p.out = [0,blink,0,  0,blink,0,  0,blink,0,  0,blink,0];
-    p.fase = 2; p.et = 0; return;
-  }
-  if (!p.run) {
-    p.out = [1,0,0,  1,0,0,  1,0,0,  1,0,0];
-    p.fase = 2; p.et = 0; return;
-  }
-  if (p.auto) p.et += dt;
-  if (p.et >= getPhaseDur(p.fase) || (!p.auto && p.step)) {
-    p.fase = (p.fase + 1) % 12;
-    p.et = 0;
-  }
-  p.step = false;
-  p.out = OUTS_4PHASE[p.fase].slice();
+  plcStates.forEach((p, idx) => {
+    p.itl = false;
 
-  const greenCount = p.out[2] + p.out[5] + p.out[8] + p.out[11];
-  if (greenCount > 1) {
-    p.out = [1,0,0, 1,0,0, 1,0,0, 1,0,0];
-    p.itl = true;
-  }
+    if (p.emg) {
+      p.out = [0, blink, 0,  0, blink, 0,  0, blink, 0,  0, blink, 0];
+      p.fase = 2;
+      p.et = 0;
+      p.step = false;
+      return;
+    }
+
+    if (!p.run) {
+      p.out = [1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0];
+      p.fase = 2;
+      p.et = 0;
+      p.step = false;
+      return;
+    }
+
+    if (p.auto) {
+      // Penyesuaian durasi hijau adaptif ringan bila kepadatan sangat tinggi (maks +2s)
+      const bonus = (p.fase % 3 === 0 && p.inputs.queueLoad >= 8) ? 0.15 : 0;
+      p.et += dt * (1 + bonus);
+    }
+
+    if (p.et >= getPhaseDur(p.fase) || (!p.auto && p.step)) {
+      p.fase = (p.fase + 1) % 12;
+      p.et = 0;
+
+      // Bila mode sinkronisasi aktif dan master/simpang berpindah fase, sesuaikan offset
+      if (syncMode === 'SYNC' && idx === 0) {
+        plcStates.forEach((other, j) => {
+          if (j !== 0 && other.run && !other.emg) { other.fase = p.fase; other.et = 0; }
+        });
+      }
+    }
+    p.step = false;
+
+    // Jika mode GREEN_WAVE atau ALTERNATE dalam mode AUTO, jaga fase relatif terhadap PLC 0
+    if (p.auto && idx > 0 && (syncMode === 'GREEN_WAVE' || syncMode === 'ALTERNATE')) {
+      const masterElapsed = cycleElapsed(plcStates[0]) + (syncMode === 'GREEN_WAVE' ? INTS[idx].offsetSec : (idx === 3 ? 0 : getCycleTotal() / 2));
+      const target = mapTimeToCycle(masterElapsed);
+      p.fase = target.fase;
+      p.et = target.et;
+    }
+
+    p.out = OUTS_4PHASE[p.fase].slice();
+
+    // Interlock keamanan: tidak boleh ada lebih dari 1 arah yang hijau bersamaan
+    const greenCount = p.out[2] + p.out[5] + p.out[8] + p.out[11];
+    if (greenCount > 1) {
+      p.out = [1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0];
+      p.itl = true;
+    }
+  });
 }
 
-function localCmd(i, v) {
-  if (i == 0) { local.run = true; local.emg = false; }
-  if (i == 1) { local.run = false; }
-  if (i == 2) local.auto = !!v;
-  if (i == 3) local.emg = !!v;
-  if (i == 4) local.step = true;
+function targetPlcIndices() {
+  return $('cfg-cmd-scope').value === 'ALL' ? [0, 1, 2, 3] : [selectedInt];
 }
 
-const $ = id => document.getElementById(id);
+function localCmd(cmdIdx, val, targetIds = null) {
+  const list = targetIds || targetPlcIndices();
+  list.forEach(idx => {
+    const p = plcStates[idx];
+    if (!p) return;
+    if (cmdIdx === 0) { p.run = true; p.emg = false; }
+    if (cmdIdx === 1) { p.run = false; }
+    if (cmdIdx === 2) { p.auto = !!val; if (p.auto) applySyncMode(); }
+    if (cmdIdx === 3) { p.emg = !!val; }
+    if (cmdIdx === 4 && !p.auto && p.run && !p.emg) { p.step = true; }
+  });
+}
 
-/* =====  KE PLC PYTHON (WebSocket) =====
-   Isi alamat  di bawah, atau buka halaman dengan ?gw=wss://plc.domainanda.com/ws
-   Kosong / server mati = otomatis memakai emulator PLC lokal di browser. */
+/* ===== WEBSOCKET GATEWAY OPSIONAL ===== */
 const GATEWAY_URL = new URLSearchParams(location.search).get('gw') || 'wss://sisplc.ibnuyuliarto.my.id/ws';
-let ws = null, remote = false, S = null;
+let ws = null, remote = false, remoteData = null;
+
 function setConn() {
   $('conn').className = remote ? 'on' : '';
-  $('conn').lastChild.textContent = remote ? 'Terhubung ke PLC Python (WebSocket)' : 'Mode lokal (emulator PLC 4 arah)';
+  $('conn').lastChild.textContent = remote ? 'Terhubung ke PLC Gateway (WebSocket)' : 'Mode lokal (4 PLC Grid 2x2)';
 }
 function sendCfg() {
-  if (remote && ws && ws.readyState === 1) ws.send(JSON.stringify({ cfg: durConfig }));
+  if (remote && ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ cfg: durConfig, sync: $('cfg-sync').value }));
+  }
+}
+let inAcc = 0;   // kirim data sensor (antrean, pelanggar) ke PLC server tiap 0,5 detik
+function sendInputs(dt) {
+  inAcc += dt; if (inAcc < 0.5) return; inAcc = 0;
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ inputs: plcStates.map(p => p.inputs) }));
 }
 function connect() {
   if (!GATEWAY_URL) return;
   try {
     ws = new WebSocket(GATEWAY_URL);
     ws.onopen = () => { remote = true; setConn(); sendCfg(); };
-    ws.onmessage = e => { S = JSON.parse(e.data); };
-    ws.onclose = () => { remote = false; S = null; setConn(); setTimeout(connect, 3000); };
+    ws.onmessage = e => {
+      try { remoteData = JSON.parse(e.data); } catch (_) {}
+    };
+    ws.onclose = () => { remote = false; remoteData = null; setConn(); setTimeout(connect, 3000); };
     ws.onerror = () => ws.close();
-  } catch (e) { setTimeout(connect, 3000); }
+  } catch (_) { setTimeout(connect, 3000); }
 }
-function cmd(i, v) {
-  if (remote && ws && ws.readyState === 1) ws.send(JSON.stringify({ coil: i, v: v ? 1 : 0 }));
-  else localCmd(i, v);
+
+function cur(idx = selectedInt) {
+  if (remote && remoteData) {
+    if (Array.isArray(remoteData.intersections) && remoteData.intersections[idx]) {
+      return remoteData.intersections[idx];
+    }
+    if (remoteData.fase !== undefined && idx === selectedInt) {
+      return remoteData;
+    }
+  }
+  const p = plcStates[idx] || plcStates[0];
+  return {
+    id: p.id,
+    fase: p.fase,
+    rem: Math.max(0, getPhaseDur(p.fase) - p.et),
+    out: p.out,
+    run: p.run,
+    auto: p.auto,
+    emg: p.emg,
+    itl: p.itl,
+    inputs: p.inputs
+  };
 }
+
+function cmd(cmdIdx, val) {
+  ensureAudioContext();
+  if (remote && ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({
+      coil: cmdIdx,
+      v: val ? 1 : 0,
+      scope: $('cfg-cmd-scope').value,
+      intId: selectedInt
+    }));
+  } else {
+    localCmd(cmdIdx, val);
+  }
+}
+
 $('bS').onclick = () => cmd(0, 1);
 $('bT').onclick = () => cmd(1, 1);
 $('bA').onclick = () => cmd(2, !cur().auto);
 $('bD').onclick = () => cmd(3, !cur().emg);
 $('bN').onclick = () => cmd(4, 1);
 
-function cur() {
-  if (remote && S) return S;
-  return {
-    fase: local.fase, 
-    rem: Math.max(0, getPhaseDur(local.fase) - local.et), 
-    out: local.out, 
-    run: local.run, 
-    auto: local.auto, 
-    emg: local.emg, 
-    itl: local.itl
-  };
-}
-
-/* ===== PANEL HMI INTERACTION ===== */
 const COILS = ['Coil 0 · START', 'Coil 1 · STOP', 'Coil 2 · MODE_AUTO', 'Coil 3 · DARURAT'];
 const INS = ['N_M', 'N_K', 'N_H', 'E_M', 'E_K', 'E_H', 'S_M', 'S_K', 'S_H', 'W_M', 'W_K', 'W_H'];
 
-$('io').innerHTML = '<h3>Perintah HMI → PLC</h3><h3>Status Output PLC (4 Arah)</h3>' +
- '<div style="flex-direction:column;align-items:stretch;gap:4px">' + COILS.map((t, i) => `<div><i id="c${i}"></i>${t}</div>`).join('') + '</div>' +
- '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">' + INS.map((t, i) => `<div><i id="n${i}"></i>${t}</div>`).join('') + '</div>';
+$('io').innerHTML =
+  '<h3>Perintah HMI → PLC</h3><h3>Status Output PLC (4 Arah)</h3>' +
+  '<div style="flex-direction:column;align-items:stretch;gap:4px">' +
+    COILS.map((t, i) => `<div><i id="c${i}"></i>${t}</div>`).join('') +
+  '</div>' +
+  '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">' +
+    INS.map((t, i) => `<div><i id="n${i}"></i>${t}</div>`).join('') +
+  '</div>';
 
 const NAMA_FASE = [
   'Utara Hijau', 'Utara Kuning', 'All Red (Transisi)',
@@ -272,60 +523,698 @@ const NAMA_FASE = [
   'Barat Hijau', 'Barat Kuning', 'All Red (Transisi)'
 ];
 
+function selectInt(idx) {
+  selectedInt = Math.max(0, Math.min(3, idx));
+  for (let i = 0; i < 4; i++) {
+    const tab = $('tab-' + i);
+    if (tab) tab.classList.toggle('on', i === selectedInt);
+  }
+  hmi(cur(selectedInt));
+}
+
 function hmi(s) {
-  const o = s.out;
-  [['sig-n', [o[0], o[1], o[2]]],
-   ['sig-e', [o[3], o[4], o[5]]],
-   ['sig-s', [o[6], o[7], o[8]]],
-   ['sig-w', [o[9], o[10], o[11]]]].forEach(([id, v]) => {
-     [...$(id).children].forEach((el, i) => el.classList.toggle('on', !!v[i]));
-   });
+  if (!s) return;
+  const o = s.out || OUTS_4PHASE[2];
+  [
+    ['sig-n', [o[0], o[1], o[2]]],
+    ['sig-e', [o[3], o[4], o[5]]],
+    ['sig-s', [o[6], o[7], o[8]]],
+    ['sig-w', [o[9], o[10], o[11]]]
+  ].forEach(([id, v]) => {
+    [...$(id).children].forEach((el, i) => el.classList.toggle('on', !!v[i]));
+  });
 
-  [s.run, !s.run, s.auto, s.emg].forEach((v, i) => $('c' + i).classList.toggle('on', !!v));
-  o.forEach((v, i) => $('n' + i).classList.toggle('on', !!v));
+  [s.run, !s.run, s.auto, s.emg].forEach((v, i) => {
+    const el = $('c' + i);
+    if (el) el.classList.toggle('on', !!v);
+  });
+  o.forEach((v, i) => {
+    const el = $('n' + i);
+    if (el) el.classList.toggle('on', !!v);
+  });
 
-  $('bA').classList.toggle('act', s.auto); 
-  $('bD').classList.toggle('act', s.emg);
-  $('bN').disabled = s.auto || !s.run || s.emg;
+  $('bA').classList.toggle('act', !!s.auto);
+  $('bD').classList.toggle('act', !!s.emg);
+  $('bN').disabled = !!s.auto || !s.run || !!s.emg;
 
-  $('fase').textContent = s.emg ? 'DARURAT • Kuning Berkedip 4 Arah' : !s.run ? 'STOP • Semua Lampu Merah' :
-    `Fase ${s.fase + 1} • ${NAMA_FASE[s.fase]} • ${String(Math.ceil(s.rem)).padStart(2, '0')} s`;
+  const sInfo = INTS[selectedInt] || INTS[0];
+  $('fase').textContent = s.emg
+    ? `${sInfo.short} • DARURAT • Kuning Berkedip`
+    : !s.run
+      ? `${sInfo.short} • STOP • Semua Lampu Merah`
+      : `${sInfo.short} • Fase ${(s.fase || 0) + 1} • ${NAMA_FASE[s.fase || 0]} • ${String(Math.ceil(s.rem || 0)).padStart(2, '0')} s`;
 
   const t = $('itl');
   t.className = s.itl ? 'bad' : '';
-  t.textContent = s.itl ? 'Interlock AKTIF: Lebih dari 1 Hijau terdeteksi!' : 'Interlock: Aman — 1 Lampu Hijau Aktif';
+  t.textContent = s.itl
+    ? 'Interlock AKTIF: Lebih dari 1 Hijau terdeteksi!'
+    : `Interlock: Aman (${sInfo.short} • Antrean: ${s.inputs ? s.inputs.queueLoad : 0})`;
 
-  const crashedCount = cars.filter(c => c.crashed).length;
-  $('bClearCrash').textContent = `Bersihkan Bangkai (${crashedCount})`;
+  const crashedCount = cars.filter(cCar => cCar.crashed).length;
+  $('bClearCrash').textContent = `Bersihkan (${crashedCount})`;
+
+  const crossingCount = pedestrians.filter(p => p.state === 'CROSSING').length;
+  const waitingCount = pedestrians.filter(p => p.state === 'WAITING').length;
+  const statsEl = $('pedStats');
+  if (statsEl) {
+    statsEl.textContent = `Pejalan kaki: ${pedestrians.length} (Menyeberang: ${crossingCount}, Menunggu: ${waitingCount})`;
+  }
 }
 
-/* ===== GEOMETRI PERSIMPANGAN (2 lajur per arah, lalu lintas jalur kanan sesuai gambar acuan) ===== */
-const cv = $('cv'), c = cv.getContext('2d'), W = 1000, H = 640, cx = 500, cy = 320;
-const HALF = 84, STOP = 112, LN = [21, 63];            // setengah lebar jalan, jarak garis stop, pusat lajur dalam/luar
-const DIR = [[0,1],[0,-1],[1,0],[-1,0]];                // 0 selatan(dari utara), 1 utara(dari selatan), 2 timur(dari barat), 3 barat(dari timur)
-const laneC = (d, k) => d == 0 ? cx - LN[k] : d == 1 ? cx + LN[k] : d == 2 ? cy + LN[k] : cy - LN[k]; // k=0 lajur dalam, 1 lajur luar
-const DEST = { RIGHT: [3,2,0,1], LEFT: [2,3,1,0] };     // arah tujuan menurut arah asal
+/* ===== SINTESIS SUARA KLAKSON KENDARAAN (WEB AUDIO API) ===== */
+const hornEnabled = true;
+let audioCtx = null;
 
-const B = [
-  [24,24,150,96,'#d8b79a'],[196,24,150,172,'#9db7d3'],[24,142,120,70,'#e3c88c'],
-  [620,24,140,110,'#a9c9a8'],[620,150,120,62,'#b6a7d6'],[790,24,170,170,'#e09a92'],
-  [24,430,130,190,'#9fc5c5'],[176,440,150,100,'#e6b99a'],[196,560,130,64,'#a9b4cc'],
-  [630,430,160,100,'#d6cf9a'],[820,420,140,200,'#9fb0cf'],[630,550,170,70,'#dca098']
+function ensureAudioContext() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!audioCtx) audioCtx = new Ctx();
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+function getCameraReferencePos() {
+  if (view3d && T3 && typeof T3.getCameraPos === 'function') {
+    return T3.getCameraPos();
+  }
+  return { x: cam2d.x, y: cam2d.y };
+}
+
+function playVehicleHorn(car) {
+  if (!car) return;
+  const ctx = ensureAudioContext();
+  if (!ctx) return;
+
+  const ref = getCameraReferencePos();
+  const dist = Math.hypot(car.x - ref.x, car.y - ref.y);
+  const maxHearDist = view3d ? 1850 : 1450;
+  if (dist > maxHearDist) return;
+
+  const atten = Math.pow(1 - dist / maxHearDist, 1.45);
+  const gainPeak = Math.max(0.008, Math.min(0.11, atten * 0.095));
+
+  const now = ctx.currentTime;
+  const isHeavy = car.type === 'truck' || car.type === 'bus';
+  const isMoto = car.type === 'moto';
+
+  const masterGain = ctx.createGain();
+  masterGain.gain.setValueAtTime(0.0001, now);
+  masterGain.gain.linearRampToValueAtTime(gainPeak, now + 0.018);
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(isHeavy ? 420 : isMoto ? 640 : 520, now);
+  filter.Q.setValueAtTime(isHeavy ? 2.4 : 1.8, now);
+
+  const freqs = isHeavy
+    ? [155, 195]
+    : isMoto
+      ? [440, 554]
+      : [390, 485];
+
+  const dur = isHeavy ? 0.28 : 0.17;
+
+  masterGain.gain.setValueAtTime(0.0001, now);
+  masterGain.gain.linearRampToValueAtTime(gainPeak, now + 0.015);
+  masterGain.gain.setValueAtTime(gainPeak, Math.max(now + 0.02, now + dur - 0.035));
+  masterGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+  freqs.forEach((f, idx) => {
+    const osc = ctx.createOscillator();
+    osc.type = isHeavy ? 'sawtooth' : 'triangle';
+    osc.frequency.setValueAtTime(f * (1 + idx * 0.004), now);
+    osc.connect(filter);
+    osc.start(now);
+    osc.stop(now + dur + 0.01);
+  });
+
+  filter.connect(masterGain);
+  masterGain.connect(ctx.destination);
+}
+
+function triggerCarHorn(car, cooldownSec = 1.6) {
+  if (!car || car.crashed) return;
+  if ((car.hornCooldown || 0) > 0) return;
+  car.hornCooldown = cooldownSec;
+  car.hornFlash = 0.28;
+  playVehicleHorn(car);
+
+  // Pejalan kaki di dekat kendaraan langsung bereaksi berlari mengikuti jalur aman
+  pedestrians.forEach(p => {
+    const dist = Math.hypot(p.x - car.x, p.y - car.y);
+    if (dist < 190) {
+      p.runTimer = Math.max(p.runTimer || 0, 2.5);
+      p.runBoost = Math.max(p.runBoost || 1, 2.5);
+      if (p.kind === 'CROSS') {
+        p.state = 'CROSSING';
+        p.waitTimer = 0;
+      }
+    }
+  });
+}
+
+/* ===== ZOOM, PAN & FOKUS KAMERA 2D / 3D ===== */
+const cv = $('cv'), c = cv.getContext('2d');
+const cam2d = { x: W / 2, y: H / 2, zoom: 1 };
+const MIN_ZOOM_2D = 0.55, MAX_ZOOM_2D = 4.2;
+let view3d = false, T3 = null;
+let povRoadMode = false;
+let povCarRef = null;
+let povPedRef = null;
+let povYawOffset = 0, povPitchOffset = 0;
+let povCycleMode = 'AUTO_CAR'; // 'AUTO_CAR' | 'ALL_CARS' | 'PEDESTRIAN' | 'ROAD_ONLY'
+let povBadgeTimer = 0;
+let povBadgeText = '';
+
+// Jalur jalan raya utama pada grid 2x2 untuk penelusuran POV jalan
+const ROAD_POV_SEGMENTS = [
+  { x1: -260, y1: ROW_Y[0] - 40, x2: W + 260, y2: ROW_Y[0] - 40 },
+  { x1: W + 260, y1: ROW_Y[0] + 40, x2: -260, y2: ROW_Y[0] + 40 },
+  { x1: -260, y1: ROW_Y[1] - 40, x2: W + 260, y2: ROW_Y[1] + 40 },
+  { x1: W + 260, y1: ROW_Y[1] + 40, x2: -260, y2: ROW_Y[1] + 40 },
+  { x1: COL_X[0] - 40, y1: -260, x2: COL_X[0] - 40, y2: H + 260 },
+  { x1: COL_X[0] + 40, y1: H + 260, x2: COL_X[0] + 40, y2: -260 },
+  { x1: COL_X[1] - 40, y1: -260, x2: COL_X[1] - 40, y2: H + 260 },
+  { x1: COL_X[1] + 40, y1: H + 260, x2: COL_X[1] + 40, y2: -260 }
 ];
-const TREES = [[186,214],[366,196],[154,226],[610,226],[780,205],[400,222],[170,420],[360,424],[345,560],[610,424],[800,545],[610,610]];
+let povRoadIdx = 0;
+let povRoadProgress = 0.15;
 
-// Panah lajur di aspal. Bentuk digambar menghadap atas (-y), lalu diputar searah kendaraan datang.
+function setPovButtonState() {
+  const b = $('bPov');
+  const sb = $('bSwitchPov');
+  if (b) {
+    b.classList.toggle('pov-on', povRoadMode);
+    b.textContent = povRoadMode ? 'POV Jalan: ON' : 'POV Jalan';
+  }
+  if (sb) {
+    sb.style.display = povRoadMode ? 'inline-block' : 'none';
+    if (povCycleMode === 'PEDESTRIAN') sb.title = 'Ganti POV (Saat ini: Pejalan Kaki / Orang — klik untuk ganti orang/jalur)';
+    else if (povCycleMode === 'ROAD_ONLY') sb.title = 'Ganti POV (Saat ini: Jalur Jalan — klik untuk pindah ke Kendaraan)';
+    else if (povCycleMode === 'ALL_CARS') sb.title = 'Ganti POV (Saat ini: Kendaraan Tertentu — klik untuk ganti kendaraan/orang/jalur)';
+    else sb.title = 'Ganti POV (Saat ini: Kendaraan Tercepat — klik untuk ganti target POV)';
+  }
+}
+
+function showPovStatusToast(msg) {
+  povBadgeText = msg;
+  povBadgeTimer = 2.2;
+  const hint = $('hint3');
+  if (hint && povRoadMode) {
+    hint.textContent = `${msg} · seret untuk menoleh · klik Ganti POV untuk pindah`;
+  }
+}
+
+function pickNextPedestrian(currentPed = null) {
+  if (!pedestrians.length) return null;
+  const idx = currentPed ? pedestrians.indexOf(currentPed) : -1;
+  return pedestrians[(idx + 1) % pedestrians.length];
+}
+
+function cyclePovTarget() {
+  if (!povRoadMode) {
+    if (!view3d) setView(true);
+    toggleRoadPov(true);
+  }
+
+  povYawOffset = 0;
+  povPitchOffset = 0;
+
+  const activeCars = cars.filter(cCar => !cCar.crashed);
+
+  if (povCycleMode === 'AUTO_CAR') {
+    if (activeCars.length > 0) {
+      const idx = povCarRef ? activeCars.indexOf(povCarRef) : -1;
+      const nextCar = activeCars[(idx + 1) % activeCars.length];
+      povCarRef = nextCar;
+      povPedRef = null;
+      povCycleMode = 'ALL_CARS';
+      const labelType = nextCar.type === 'moto' ? 'Motor' : nextCar.type === 'bus' ? 'Bus' : nextCar.type === 'truck' ? 'Truk' : 'Mobil';
+      showPovStatusToast(`POV: ${labelType} #${cars.indexOf(nextCar) + 1} (${activeCars.length} kendaraan aktif)`);
+    } else if (pedestrians.length > 0) {
+      const nextPed = pickNextPedestrian(povPedRef);
+      povPedRef = nextPed;
+      povCarRef = null;
+      povCycleMode = 'PEDESTRIAN';
+      const pIdx = pedestrians.indexOf(nextPed) + 1;
+      showPovStatusToast(`POV: Orang / Pejalan Kaki #${pIdx} (${pedestrians.length} orang)`);
+    } else {
+      povCycleMode = 'ROAD_ONLY';
+      povCarRef = null;
+      povPedRef = null;
+      povRoadIdx = (povRoadIdx + 1) % ROAD_POV_SEGMENTS.length;
+      povRoadProgress = 0.05;
+      showPovStatusToast(`POV: Jalur Jalan #${povRoadIdx + 1}`);
+    }
+  } else if (povCycleMode === 'ALL_CARS') {
+    if (activeCars.length > 1) {
+      const idx = povCarRef ? activeCars.indexOf(povCarRef) : -1;
+      const nextIdx = (idx + 1) % activeCars.length;
+      if (nextIdx !== 0) {
+        const nextCar = activeCars[nextIdx];
+        povCarRef = nextCar;
+        povPedRef = null;
+        const labelType = nextCar.type === 'moto' ? 'Motor' : nextCar.type === 'bus' ? 'Bus' : nextCar.type === 'truck' ? 'Truk' : 'Mobil';
+        showPovStatusToast(`POV: ${labelType} #${cars.indexOf(nextCar) + 1} (${nextIdx + 1}/${activeCars.length})`);
+      } else if (pedestrians.length > 0) {
+        const nextPed = pickNextPedestrian(povPedRef);
+        povPedRef = nextPed;
+        povCarRef = null;
+        povCycleMode = 'PEDESTRIAN';
+        const pIdx = pedestrians.indexOf(nextPed) + 1;
+        showPovStatusToast(`POV: Orang / Pejalan Kaki #${pIdx} (${pedestrians.length} orang)`);
+      } else {
+        povCycleMode = 'ROAD_ONLY';
+        povCarRef = null;
+        povPedRef = null;
+        povRoadIdx = (povRoadIdx + 1) % ROAD_POV_SEGMENTS.length;
+        povRoadProgress = 0.05;
+        showPovStatusToast(`POV: Jalur Jalan #${povRoadIdx + 1}`);
+      }
+    } else if (pedestrians.length > 0) {
+      const nextPed = pickNextPedestrian(povPedRef);
+      povPedRef = nextPed;
+      povCarRef = null;
+      povCycleMode = 'PEDESTRIAN';
+      const pIdx = pedestrians.indexOf(nextPed) + 1;
+      showPovStatusToast(`POV: Orang / Pejalan Kaki #${pIdx} (${pedestrians.length} orang)`);
+    } else {
+      povCycleMode = 'ROAD_ONLY';
+      povCarRef = null;
+      povPedRef = null;
+      povRoadIdx = (povRoadIdx + 1) % ROAD_POV_SEGMENTS.length;
+      povRoadProgress = 0.05;
+      showPovStatusToast(`POV: Jalur Jalan #${povRoadIdx + 1}`);
+    }
+  } else if (povCycleMode === 'PEDESTRIAN') {
+    const nextPed = pickNextPedestrian(povPedRef);
+    const curIdx = povPedRef ? pedestrians.indexOf(povPedRef) : -1;
+    const nextIdx = nextPed ? pedestrians.indexOf(nextPed) : -1;
+    // Jika masih ada orang lain setelah orang saat ini, pindah ke orang berikutnya; jika sudah memutar penuh, pindah ke Jalur Jalan
+    if (nextPed && pedestrians.length > 1 && !(curIdx >= 0 && nextIdx === 0)) {
+      povPedRef = nextPed;
+      povCarRef = null;
+      showPovStatusToast(`POV: Orang / Pejalan Kaki #${nextIdx + 1} (${pedestrians.length} orang)`);
+    } else {
+      povCycleMode = 'ROAD_ONLY';
+      povCarRef = null;
+      povPedRef = null;
+      povRoadIdx = (povRoadIdx + 1) % ROAD_POV_SEGMENTS.length;
+      povRoadProgress = 0.05;
+      showPovStatusToast(`POV: Jalur Jalan #${povRoadIdx + 1}`);
+    }
+  } else {
+    povCycleMode = 'AUTO_CAR';
+    povCarRef = null;
+    povPedRef = null;
+    const best = pickBestPovCar();
+    if (best) {
+      povCarRef = best;
+      showPovStatusToast(`POV: Otomatis Kendaraan Tercepat`);
+    } else if (pedestrians.length > 0) {
+      const nextPed = pickNextPedestrian(null);
+      povPedRef = nextPed;
+      povCycleMode = 'PEDESTRIAN';
+      showPovStatusToast(`POV: Orang / Pejalan Kaki #1 (${pedestrians.length} orang)`);
+    } else {
+      povRoadIdx = (povRoadIdx + 1) % ROAD_POV_SEGMENTS.length;
+      povRoadProgress = 0.05;
+      showPovStatusToast(`POV: Jalur Jalan #${povRoadIdx + 1}`);
+    }
+  }
+
+  setPovButtonState();
+}
+
+function pickBestPovCar() {
+  const activeCars = cars.filter(cCar => !cCar.crashed);
+  if (!activeCars.length) return null;
+  if (povCycleMode === 'ALL_CARS' && povCarRef && activeCars.includes(povCarRef)) {
+    return povCarRef;
+  }
+  if (povCycleMode === 'AUTO_CAR') {
+    if (povCarRef && activeCars.includes(povCarRef)) return povCarRef;
+    return activeCars.reduce((best, curr) => (curr.v > (best ? best.v : -1) ? curr : best), null);
+  }
+  return null;
+}
+
+function pickActivePedestrian() {
+  if (!pedestrians.length) {
+    povPedRef = null;
+    return null;
+  }
+  if (povPedRef && pedestrians.includes(povPedRef)) {
+    return povPedRef;
+  }
+  const crossing = pedestrians.find(p => p.state === 'CROSSING');
+  povPedRef = crossing || pedestrians[0];
+  return povPedRef;
+}
+
+function updateRoadPovState(dt) {
+  if (!povRoadMode) return null;
+  if (povBadgeTimer > 0) {
+    povBadgeTimer = Math.max(0, povBadgeTimer - dt);
+  }
+
+  if (povCycleMode === 'PEDESTRIAN') {
+    const ped = pickActivePedestrian();
+    if (ped) {
+      const isRunning = (ped.runTimer || 0) > 0;
+      const activeSpeed = ped.state === 'WAITING' ? 0 : ped.speed * (isRunning ? (ped.runBoost || 2.5) : 1);
+      const bobOffset = ped.state === 'WAITING' ? 0 : Math.abs(Math.sin(ped.stride)) * 1.4;
+      return {
+        x: ped.x + Math.cos(ped.angle) * 2.5,
+        y: ped.y + Math.sin(ped.angle) * 2.5,
+        angle: ped.angle + povYawOffset,
+        speed: activeSpeed,
+        isPedestrian: true,
+        eyeHeight: (ped.state === 'CROSSING' ? 14.5 : 16.5) + bobOffset
+      };
+    }
+    povCycleMode = 'ROAD_ONLY';
+  }
+
+  const car = povCycleMode === 'ROAD_ONLY' ? null : pickBestPovCar();
+  if (car) {
+    povCarRef = car;
+    const speed = Math.max(18, car.v);
+    const fx = Math.cos(car.angle);
+    const fy = Math.sin(car.angle);
+    // Posisi mata POV berada di bagian depan/kokpit kendaraan menghadap searah jalan
+    const eyeX = car.x + fx * Math.max(8, (VT[car.type]?.L || 30) * 0.28);
+    const eyeY = car.y + fy * Math.max(8, (VT[car.type]?.L || 30) * 0.28);
+    return { x: eyeX, y: eyeY, angle: car.angle + povYawOffset, speed, isPedestrian: false };
+  }
+
+  if (povCycleMode !== 'ROAD_ONLY') {
+    povCarRef = null;
+  }
+
+  // Fallback menelusuri ruas jalan secara mulus bila belum ada kendaraan aktif atau mode jalur jalan dipilih
+  const seg = ROAD_POV_SEGMENTS[povRoadIdx % ROAD_POV_SEGMENTS.length];
+  const segLen = Math.max(1, Math.hypot(seg.x2 - seg.x1, seg.y2 - seg.y1));
+  const roadSpeed = 95;
+  povRoadProgress += (roadSpeed * dt) / segLen;
+  if (povRoadProgress >= 1) {
+    povRoadProgress = 0;
+    povRoadIdx = (povRoadIdx + 1) % ROAD_POV_SEGMENTS.length;
+  }
+  const activeSeg = ROAD_POV_SEGMENTS[povRoadIdx % ROAD_POV_SEGMENTS.length];
+  const x = activeSeg.x1 + (activeSeg.x2 - activeSeg.x1) * povRoadProgress;
+  const y = activeSeg.y1 + (activeSeg.y2 - activeSeg.y1) * povRoadProgress;
+  const ang = Math.atan2(activeSeg.y2 - activeSeg.y1, activeSeg.x2 - activeSeg.x1);
+  return { x, y, angle: ang + povYawOffset, speed: roadSpeed, isPedestrian: false };
+}
+
+function toggleRoadPov(forceState = null) {
+  povRoadMode = typeof forceState === 'boolean' ? forceState : !povRoadMode;
+  povYawOffset = 0;
+  povPitchOffset = 0;
+  if (povRoadMode) {
+    povCycleMode = 'AUTO_CAR';
+    povCarRef = pickBestPovCar();
+    povPedRef = null;
+    if (!view3d) {
+      cam2d.zoom = Math.max(cam2d.zoom, 1.9);
+    }
+    const hint = $('hint3');
+    if (hint) {
+      hint.textContent = 'Mode POV Jalan aktif · klik Ganti POV untuk pindah kendaraan/orang/jalur · seret untuk menoleh';
+    }
+  } else {
+    povCarRef = null;
+    povPedRef = null;
+    povCycleMode = 'AUTO_CAR';
+    povBadgeTimer = 0;
+    const hint = $('hint3');
+    if (hint) {
+      hint.textContent = 'Seret kiri putar · seret kanan/2 jari geser bebas · WASD/Panah gerak · scroll/cubit zoom';
+    }
+  }
+  setPovButtonState();
+}
+
+function setFocusButtonActive(id) {
+  ['fAll', 'fS1', 'fS2', 'fS3', 'fS4'].forEach(btnId => {
+    $(btnId).classList.toggle('on', btnId === id);
+  });
+}
+
+function zoom2dAt(factor, sx = null, sy = null) {
+  const prevZoom = cam2d.zoom;
+  const nextZoom = Math.max(MIN_ZOOM_2D, Math.min(MAX_ZOOM_2D, prevZoom * factor));
+  if (Math.abs(nextZoom - prevZoom) < 1e-4) return;
+  if (sx !== null && sy !== null) {
+    const rect = cv.getBoundingClientRect();
+    const nx = (sx - rect.left) / (rect.width || 1);
+    const ny = (sy - rect.top) / (rect.height || 1);
+    const wx = cam2d.x + (nx - 0.5) * (W / prevZoom);
+    const wy = cam2d.y + (ny - 0.5) * (H / prevZoom);
+    cam2d.x = wx - (nx - 0.5) * (W / nextZoom);
+    cam2d.y = wy - (ny - 0.5) * (H / nextZoom);
+  }
+  cam2d.zoom = nextZoom;
+}
+
+function focus2d(target) {
+  if (target === 'ALL') {
+    cam2d.x = W / 2;
+    cam2d.y = H / 2;
+    cam2d.zoom = 1;
+    setFocusButtonActive('fAll');
+  } else {
+    const s = INTS[target];
+    if (!s) return;
+    cam2d.x = s.cx;
+    cam2d.y = s.cy;
+    cam2d.zoom = 2.35;
+    selectInt(target);
+    setFocusButtonActive('fS' + (target + 1));
+  }
+}
+
+$('zIn').onclick = () => {
+  if (view3d && T3) T3.zoomBy(0.82);
+  else zoom2dAt(1.25, cv.getBoundingClientRect().left + cv.getBoundingClientRect().width / 2, cv.getBoundingClientRect().top + cv.getBoundingClientRect().height / 2);
+};
+$('zOut').onclick = () => {
+  if (view3d && T3) T3.zoomBy(1.22);
+  else zoom2dAt(0.8, cv.getBoundingClientRect().left + cv.getBoundingClientRect().width / 2, cv.getBoundingClientRect().top + cv.getBoundingClientRect().height / 2);
+};
+$('zReset').onclick = () => {
+  if (view3d && T3) { T3.focusTarget('ALL'); setFocusButtonActive('fAll'); }
+  else focus2d('ALL');
+};
+
+function refreshSimulation() {
+  cars.length = 0;
+  crashes.length = 0;
+  pedestrians.length = 0;
+  pedSpawnTimer = 0.1;
+  spawnT = [0.2, 0.5, 0.8, 1.1];
+
+  plcStates.forEach((p, idx) => {
+    p.fase = 0;
+    p.et = 0;
+    p.run = true;
+    p.auto = true;
+    p.emg = false;
+    p.out = OUTS_4PHASE[0].slice();
+    p.itl = false;
+    p.step = false;
+  });
+
+  if (remote && ws && ws.readyState === 1) ws.send(JSON.stringify({ reset: true }));
+  updatePLCConfig();
+  updateDensity();
+  selectInt(0);
+  setFocusButtonActive('fAll');
+  if (view3d && T3) T3.focusTarget('ALL');
+  else focus2d('ALL');
+  hmi(cur(selectedInt));
+}
+
+$('bRefresh').onclick = refreshSimulation;
+
+$('fAll').onclick = () => { setFocusButtonActive('fAll'); if (view3d && T3) T3.focusTarget('ALL'); else focus2d('ALL'); };
+[0, 1, 2, 3].forEach(i => {
+  $('fS' + (i + 1)).onclick = () => {
+    selectInt(i);
+    setFocusButtonActive('fS' + (i + 1));
+    if (view3d && T3) T3.focusTarget(i);
+    else focus2d(i);
+  };
+});
+
+// Interaksi pointer & wheel pada kanvas 2D
+const activePointers2d = new Map();
+let drag2d = null, lastPinchDist2d = null;
+
+cv.addEventListener('pointerdown', e => {
+  activePointers2d.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  cv.setPointerCapture(e.pointerId);
+  if (activePointers2d.size === 1) {
+    drag2d = { id: e.pointerId, sx: e.clientX, sy: e.clientY, cx: cam2d.x, cy: cam2d.y, moved: false };
+    cv.classList.add('dragging');
+  } else if (activePointers2d.size === 2) {
+    const pts = [...activePointers2d.values()];
+    lastPinchDist2d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    drag2d = null;
+  }
+});
+
+cv.addEventListener('pointermove', e => {
+  if (!activePointers2d.has(e.pointerId)) return;
+  activePointers2d.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if (activePointers2d.size === 2) {
+    const pts = [...activePointers2d.values()];
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (lastPinchDist2d && dist > 0) {
+      const mx = (pts[0].x + pts[1].x) / 2;
+      const my = (pts[0].y + pts[1].y) / 2;
+      zoom2dAt(dist / lastPinchDist2d, mx, my);
+    }
+    lastPinchDist2d = dist;
+    return;
+  }
+
+  if (drag2d && drag2d.id === e.pointerId) {
+    const dx = e.clientX - drag2d.sx;
+    const dy = e.clientY - drag2d.sy;
+    if (Math.hypot(dx, dy) > 5) drag2d.moved = true;
+    const rect = cv.getBoundingClientRect();
+    const scaleX = W / ((rect.width || 1) * cam2d.zoom);
+    const scaleY = H / ((rect.height || 1) * cam2d.zoom);
+    cam2d.x = Math.max(0, Math.min(W, drag2d.cx - dx * scaleX));
+    cam2d.y = Math.max(0, Math.min(H, drag2d.cy - dy * scaleY));
+  }
+});
+
+const endPointer2d = e => {
+  const wasTap = drag2d && !drag2d.moved;
+  activePointers2d.delete(e.pointerId);
+  if (activePointers2d.size < 2) lastPinchDist2d = null;
+  if (!drag2d || drag2d.id === e.pointerId) {
+    drag2d = null;
+    cv.classList.remove('dragging');
+  }
+
+  if (wasTap && e) {
+    const rect = cv.getBoundingClientRect();
+    const normX = (e.clientX - rect.left) / (rect.width || 1);
+    const normY = (e.clientY - rect.top) / (rect.height || 1);
+    const wx = cam2d.x + (normX - 0.5) * (W / cam2d.zoom);
+    const wy = cam2d.y + (normY - 0.5) * (H / cam2d.zoom);
+    const hitInt = INTS.find(s => Math.hypot(wx - s.cx, wy - s.cy) < HALF + 30);
+    if (hitInt) selectInt(hitInt.id);
+  }
+};
+cv.addEventListener('pointerup', endPointer2d);
+cv.addEventListener('pointercancel', endPointer2d);
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom2dAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX, e.clientY);
+}, { passive: false });
+cv.addEventListener('dblclick', () => {
+  if (cam2d.zoom > 1.2) focus2d('ALL');
+  else zoom2dAt(1.8);
+});
+
+/* ===== BLOK KOTA & PEPPOHONAN PADA GRID 2x2 JARAK JAUH ===== */
+function buildCityProps() {
+  const palette = ['#d8b79a', '#9db7d3', '#e3c88c', '#a9c9a8', '#b6a7d6', '#e09a92', '#9fc5c5', '#e6b99a', '#d6cf9a', '#9fb0cf'];
+  const blocks = [];
+  const trees = [];
+
+  // 3 kolom blok vertikal: kiri S1, tengah antara S1 & S2, kanan S2
+  const xCols = [
+    [36, COL_X[0] - HALF - 56],
+    [COL_X[0] + HALF + 24, COL_X[1] - HALF - 56],
+    [COL_X[1] + HALF + 24, W - 56]
+  ];
+  // 3 baris blok horizontal: atas S1/S2, tengah antara atas & bawah, bawah S3/S4
+  const yRows = [
+    [36, ROW_Y[0] - HALF - 56],
+    [ROW_Y[0] + HALF + 24, ROW_Y[1] - HALF - 56],
+    [ROW_Y[1] + HALF + 24, H - 56]
+  ];
+
+  let idx = 0;
+  yRows.forEach(([y0, y1], rIdx) => {
+    xCols.forEach(([x0, x1], cIdx) => {
+      const availW = x1 - x0;
+      const availH = y1 - y0;
+      if (availW < 120 || availH < 120) return;
+
+      const colsCount = availW > 520 ? 3 : 2;
+      const rowsCount = availH > 380 ? 2 : 1;
+      const gap = 24;
+      const bw = Math.max(85, Math.floor((availW - gap * (colsCount + 1)) / colsCount));
+      const bh = Math.max(80, Math.floor((availH - gap * (rowsCount + 1)) / rowsCount));
+
+      for (let rr = 0; rr < rowsCount; rr++) {
+        for (let cc = 0; cc < colsCount; cc++) {
+          const bx = x0 + gap + cc * (bw + gap);
+          const by = y0 + gap + rr * (bh + gap);
+          blocks.push([bx, by, bw, bh, palette[(idx + rIdx + cIdx) % palette.length]]);
+          idx++;
+        }
+      }
+
+      // Pepohonan di sepanjang trotoar batas blok
+      for (let tx = x0 + 18; tx < x1 - 12; tx += 130) {
+        trees.push([tx, y0 + 8]);
+        trees.push([tx, y1 - 8]);
+      }
+      for (let ty = y0 + 55; ty < y1 - 20; ty += 130) {
+        trees.push([x0 + 8, ty]);
+        trees.push([x1 - 8, ty]);
+      }
+    });
+  });
+
+  return { blocks, trees };
+}
+
+const CITY = buildCityProps();
+// Hilangkan baris blok paling atas (rIdx === 0) agar area lingkaran merah menjadi lokasi Gedung DPR & tamannya
+const DPR_TOP_PARK = {
+  x: COL_X[0] + HALF + 32,
+  y: 44,
+  w: (COL_X[1] - HALF - 56) - (COL_X[0] + HALF + 32),
+  h: (ROW_Y[0] - HALF - 56) - 44
+};
+const B = CITY.blocks.filter(([bx, by, bw, bh]) => {
+  return !(by + bh <= ROW_Y[0] - HALF - 30 && bx >= COL_X[0] + HALF && bx + bw <= COL_X[1] - HALF);
+});
+const TREES = CITY.trees;
+const DPR_ZONE = {
+  x: DPR_TOP_PARK.x + DPR_TOP_PARK.w / 2 - 155,
+  y: DPR_TOP_PARK.y + DPR_TOP_PARK.h / 2 - 64,
+  w: 310,
+  h: 128
+};
+
+/* ===== PENGGAMBARAN 2D ===== */
 function roadArrow(x, y, ang, type) {
   c.save(); c.translate(x, y); c.rotate(ang);
   c.fillStyle = c.strokeStyle = '#fff'; c.lineWidth = 3;
-  const head = (px, py, dx, dy) => { // segitiga kepala panah searah (dx,dy)
-    c.beginPath(); c.moveTo(px + dx * 7, py + dy * 7);
-    c.lineTo(px - dx * 1 - dy * 5, py - dy * 1 + dx * 5); c.lineTo(px - dx * 1 + dy * 5, py - dy * 1 - dx * 5); c.closePath(); c.fill();
+  const head = (px, py, dx, dy) => {
+    c.beginPath();
+    c.moveTo(px + dx * 7, py + dy * 7);
+    c.lineTo(px - dx * 1 - dy * 5, py - dy * 1 + dx * 5);
+    c.lineTo(px - dx * 1 + dy * 5, py - dy * 1 - dx * 5);
+    c.closePath(); c.fill();
   };
   c.beginPath(); c.moveTo(0, 18);
-  if (type === 'R') {               // lajur luar: hanya belok kanan
+  if (type === 'R') {
     c.lineTo(0, -2); c.quadraticCurveTo(0, -12, 10, -12); c.stroke(); head(10, -12, 1, 0);
-  } else {                          // lajur dalam: lurus + belok kiri
+  } else {
     c.lineTo(0, -14); c.stroke(); head(0, -14, 0, -1);
     c.beginPath(); c.moveTo(0, 2); c.quadraticCurveTo(0, -8, -10, -8); c.stroke(); head(-10, -8, -1, 0);
   }
@@ -333,280 +1222,2293 @@ function roadArrow(x, y, ang, type) {
 }
 
 function drawScene() {
-  c.fillStyle = '#cfdac6'; c.fillRect(0, 0, W, H);
+  c.save();
+  c.translate(W / 2, H / 2);
+  c.scale(cam2d.zoom, cam2d.zoom);
+  c.translate(-cam2d.x, -cam2d.y);
+
+  // Tanah rumput hijau
+  c.fillStyle = '#79b865';
+  c.fillRect(-1200, -1000, W + 2400, H + 2000);
+  c.fillStyle = '#8ac774';
+  c.fillRect(20, 20, W - 40, H - 40);
+
+  // Trotoar rumput/paving di sekitar blok kota
+  c.fillStyle = '#c8d1be';
+  ROW_Y.forEach(ry => {
+    c.fillRect(-400, ry - HALF - 16, W + 800, 16);
+    c.fillRect(-400, ry + HALF, W + 800, 16);
+  });
+  COL_X.forEach(cx => {
+    c.fillRect(cx - HALF - 16, -400, 16, H + 800);
+    c.fillRect(cx + HALF, -400, 16, H + 800);
+  });
+
+  // Jalan arteri horizontal & vertikal pada grid 2x2
   c.fillStyle = '#3b4049';
-  c.fillRect(cx - HALF, 0, 2 * HALF, H); c.fillRect(0, cy - HALF, W, 2 * HALF);
+  ROW_Y.forEach(ry => c.fillRect(-400, ry - HALF, W + 800, 2 * HALF));
+  COL_X.forEach(cx => c.fillRect(cx - HALF, -400, 2 * HALF, H + 800));
 
-  const line = (a, col, w, dash) => { c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash);
-    a.forEach(l => { c.beginPath(); c.moveTo(l[0], l[1]); c.lineTo(l[2], l[3]); c.stroke(); }); c.setLineDash([]); };
-  // Garis median kuning (berhenti di garis stop)
-  line([[cx,0,cx,cy-STOP],[cx,cy+STOP,cx,H],[0,cy,cx-STOP,cy],[cx+STOP,cy,W,cy]], '#e0c84f', 3, []);
-  // Pemisah lajur putih putus-putus
-  line([[cx-42,0,cx-42,cy-STOP],[cx+42,0,cx+42,cy-STOP],[cx-42,cy+STOP,cx-42,H],[cx+42,cy+STOP,cx+42,H],
-        [0,cy-42,cx-STOP,cy-42],[0,cy+42,cx-STOP,cy+42],[cx+STOP,cy-42,W,cy-42],[cx+STOP,cy+42,W,cy+42]], '#f2f2f2', 2, [14,14]);
+  const drawSeg = (x1, y1, x2, y2, col, w, dash = []) => {
+    c.strokeStyle = col;
+    c.lineWidth = w;
+    c.setLineDash(dash);
+    c.beginPath();
+    c.moveTo(x1, y1);
+    c.lineTo(x2, y2);
+    c.stroke();
+    c.setLineDash([]);
+  };
 
-  // Zebra cross 4 sisi
-  c.fillStyle = '#f2f2f2';
-  for (let i = 0; i < 10; i++) {
-    const o = -80 + i * 16;
-    c.fillRect(cx + o, cy - 106, 8, 16); c.fillRect(cx + o, cy + 90, 8, 16);
-    c.fillRect(cx - 106, cy + o, 16, 8); c.fillRect(cx + 90, cy + o, 16, 8);
-  }
-  // Garis stop (hanya di sisi lajur kendaraan yang datang)
-  c.fillRect(cx - HALF, cy - STOP - 4, HALF, 4);   // utara  -> selatan
-  c.fillRect(cx, cy + STOP, HALF, 4);              // selatan -> utara
-  c.fillRect(cx - STOP - 4, cy, 4, HALF);          // barat  -> timur
-  c.fillRect(cx + STOP, cy - HALF, 4, HALF);       // timur  -> barat
-
-  // Panah lajur: dalam = lurus + kiri, luar = kanan
-  [[0, cy - 175, Math.PI], [1, cy + 175, 0], [2, cx - 175, Math.PI / 2], [3, cx + 175, -Math.PI / 2]].forEach(([d, p, ang]) => {
-    [0, 1].forEach(k => d < 2 ? roadArrow(laneC(d, k), p, ang, k ? 'R' : 'SL') : roadArrow(p, laneC(d, k), ang, k ? 'R' : 'SL'));
-  });
-
-  B.forEach(([x, y, w, h, col]) => {
-    c.fillStyle = 'rgba(0,0,0,.16)'; c.fillRect(x + 8, y + 8, w, h);
-    c.fillStyle = col; c.fillRect(x, y, w, h);
-    c.fillStyle = 'rgba(255,255,255,.28)'; c.fillRect(x + 6, y + 6, w - 12, h - 12);
-    c.fillStyle = 'rgba(60,70,85,.55)';
-    for (let i = x + 14; i < x + w - 20; i += 22) for (let j = y + 14; j < y + h - 20; j += 20) c.fillRect(i, j, 10, 9);
-  });
-  TREES.forEach(([x, y]) => {
-    c.fillStyle = '#4f8a55'; c.beginPath(); c.arc(x, y, 13, 0, 7); c.fill();
-    c.fillStyle = '#69a56c'; c.beginPath(); c.arc(x - 3, y - 3, 7, 0, 7); c.fill();
-  });
-}
-
-/* Lampu isyarat di sisi kanan pengemudi + rambu "Belok kanan jalan terus" */
-function drawTrafficLights(o) {
-  const rule = $('cfg-left-turn').value;
-  [{ x: cx - 104, y: cy - 140, i: 0, sx: -1, n: 'UTARA' }, { x: cx + 104, y: cy + 140, i: 6, sx: 1, n: 'SELATAN' },
-   { x: cx - 140, y: cy + 104, i: 9, sx: -1, n: 'BARAT' }, { x: cx + 140, y: cy - 104, i: 3, sx: 1, n: 'TIMUR' }].forEach(l => {
-    if (rule === 'ALWAYS') {
-      c.fillStyle = '#0b6b3a'; c.fillRect(l.x + l.sx * 70 - 40, l.y - 13, 80, 26);
-      c.strokeStyle = '#fff'; c.lineWidth = 2; c.strokeRect(l.x + l.sx * 70 - 40, l.y - 13, 80, 26);
-      c.fillStyle = '#fff'; c.font = 'bold 9px "Segoe UI", sans-serif'; c.textAlign = 'center';
-      c.fillText('BELOK KANAN', l.x + l.sx * 70, l.y - 2); c.fillText('JALAN TERUS', l.x + l.sx * 70, l.y + 9);
-    }
-    c.fillStyle = '#1a202c'; c.fillRect(l.x - 26, l.y - 44, 52, 14);
-    c.fillStyle = '#fff'; c.font = 'bold 10px "Segoe UI", sans-serif'; c.textAlign = 'center'; c.fillText(l.n, l.x, l.y - 33);
-    c.fillStyle = '#232a33'; c.fillRect(l.x - 10, l.y - 25, 20, 50);
-    [[o[l.i], '#ff4b45', -16], [o[l.i + 1], '#ffc83a', 0], [o[l.i + 2], '#4ee07a', 16]].forEach(([on, col, dy]) => {
-      c.fillStyle = on ? col : '#3a404a'; c.beginPath(); c.arc(l.x, l.y + dy, 5, 0, 7); c.fill();
-      if (on) { c.shadowColor = col; c.shadowBlur = 10; c.fill(); c.shadowBlur = 0; }
+  ROW_Y.forEach(ry => {
+    drawSeg(-400, ry, COL_X[0] - STOP, ry, '#e0c84f', 3);
+    drawSeg(COL_X[0] + STOP, ry, COL_X[1] - STOP, ry, '#e0c84f', 3);
+    drawSeg(COL_X[1] + STOP, ry, W + 400, ry, '#e0c84f', 3);
+    [ry - 40, ry + 40].forEach(ly => {
+      drawSeg(-400, ly, COL_X[0] - STOP, ly, '#f2f2f2', 2, [16, 16]);
+      drawSeg(COL_X[0] + STOP, ly, COL_X[1] - STOP, ly, '#f2f2f2', 2, [16, 16]);
+      drawSeg(COL_X[1] + STOP, ly, W + 400, ly, '#f2f2f2', 2, [16, 16]);
     });
   });
+
+  COL_X.forEach(cx => {
+    drawSeg(cx, -400, cx, ROW_Y[0] - STOP, '#e0c84f', 3);
+    drawSeg(cx, ROW_Y[0] + STOP, cx, ROW_Y[1] - STOP, '#e0c84f', 3);
+    drawSeg(cx, ROW_Y[1] + STOP, cx, H + 400, '#e0c84f', 3);
+    [cx - 40, cx + 40].forEach(lx => {
+      drawSeg(lx, -400, lx, ROW_Y[0] - STOP, '#f2f2f2', 2, [16, 16]);
+      drawSeg(lx, ROW_Y[0] + STOP, lx, ROW_Y[1] - STOP, '#f2f2f2', 2, [16, 16]);
+      drawSeg(lx, ROW_Y[1] + STOP, lx, H + 400, '#f2f2f2', 2, [16, 16]);
+    });
+  });
+
+  // Zebra cross & garis stop tiap persimpangan
+  c.fillStyle = '#f2f2f2';
+  INTS.forEach(s => {
+    for (let i = 0; i < 9; i++) {
+      const o = -68 + i * 15.2;
+      c.fillRect(s.cx + o, s.cy - 98, 7.5, 14);
+      c.fillRect(s.cx + o, s.cy + 84, 7.5, 14);
+      c.fillRect(s.cx - 98, s.cy + o, 14, 7.5);
+      c.fillRect(s.cx + 84, s.cy + o, 14, 7.5);
+    }
+    c.fillRect(s.cx - HALF, s.cy - STOP - 4, HALF, 4);
+    c.fillRect(s.cx, s.cy + STOP, HALF, 4);
+    c.fillRect(s.cx - STOP - 4, s.cy, 4, HALF);
+    c.fillRect(s.cx + STOP, s.cy - HALF, 4, HALF);
+
+    // Panah lajur di pendekatan simpang
+    [0, 1].forEach(k => {
+      roadArrow(laneC(0, k, s.id), s.cy - 155, Math.PI, k ? 'R' : 'SL');
+      roadArrow(laneC(1, k, s.id), s.cy + 155, 0, k ? 'R' : 'SL');
+      roadArrow(s.cx - 155, laneC(2, k, s.id), Math.PI / 2, k ? 'R' : 'SL');
+      roadArrow(s.cx + 155, laneC(3, k, s.id), -Math.PI / 2, k ? 'R' : 'SL');
+    });
+  });
+
+  // Rumah dan bangunan di blok perkotaan
+  B.forEach(([x, y, w, h, col], idx) => {
+    c.fillStyle = 'rgba(0,0,0,.16)';
+    c.fillRect(x + 7, y + 7, w, h);
+    c.fillStyle = col;
+    c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(255,255,255,.45)';
+    c.lineWidth = 2;
+    c.strokeRect(x + 3, y + 3, w - 6, h - 6);
+
+    // Atap miring/bubungan rumah
+    c.fillStyle = idx % 2 === 0 ? 'rgba(130, 58, 45, .35)' : 'rgba(52, 73, 94, .32)';
+    c.fillRect(x + 12, y + 12, w - 24, h - 24);
+
+    // Jendela rumah
+    c.fillStyle = 'rgba(42, 58, 74, .65)';
+    for (let ix = x + 18; ix < x + w - 22; ix += 24) {
+      for (let iy = y + 18; iy < y + h - 22; iy += 22) {
+        c.fillRect(ix, iy, 10, 9);
+      }
+    }
+  });
+
+  // Pepohonan rimbun
+  TREES.forEach(([x, y]) => {
+    if (x >= DPR_TOP_PARK.x - 16 && x <= DPR_TOP_PARK.x + DPR_TOP_PARK.w + 16 &&
+        y >= DPR_TOP_PARK.y - 16 && y <= DPR_TOP_PARK.y + DPR_TOP_PARK.h + 16) {
+      return;
+    }
+    c.fillStyle = 'rgba(0,0,0,.18)';
+    c.beginPath(); c.arc(x + 3, y + 4, 12, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#3e7d44';
+    c.beginPath(); c.arc(x, y, 12, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#5da354';
+    c.beginPath(); c.arc(x - 2.5, y - 2.5, 6.5, 0, Math.PI * 2); c.fill();
+  });
+
+  // Taman hijau & jalur pejalan kaki di sekeliling Gedung DPR (area lingkaran merah)
+  c.save();
+  c.fillStyle = '#5ca34d';
+  c.fillRect(DPR_TOP_PARK.x, DPR_TOP_PARK.y, DPR_TOP_PARK.w, DPR_TOP_PARK.h);
+  c.strokeStyle = '#dce6d5';
+  c.lineWidth = 4;
+  c.strokeRect(DPR_TOP_PARK.x + 6, DPR_TOP_PARK.y + 6, DPR_TOP_PARK.w - 12, DPR_TOP_PARK.h - 12);
+
+  // Semak & pohon taman di sisi kiri-kanan area taman DPR
+  [
+    [DPR_TOP_PARK.x + 48, DPR_TOP_PARK.y + 42],
+    [DPR_TOP_PARK.x + 88, DPR_TOP_PARK.y + 118],
+    [DPR_TOP_PARK.x + DPR_TOP_PARK.w - 48, DPR_TOP_PARK.y + 42],
+    [DPR_TOP_PARK.x + DPR_TOP_PARK.w - 88, DPR_TOP_PARK.y + 118]
+  ].forEach(([px, py]) => {
+    c.fillStyle = '#36753d';
+    c.beginPath(); c.arc(px, py, 14, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#67b35b';
+    c.beginPath(); c.arc(px - 3, py - 3, 7, 0, Math.PI * 2); c.fill();
+  });
+  c.restore();
+
+  // Kompleks Gedung DPR di area atas (lingkaran merah)
+  const dprX = DPR_ZONE.x, dprY = DPR_ZONE.y, dprW = DPR_ZONE.w, dprH = DPR_ZONE.h;
+  const dprCx = dprX + dprW / 2, dprCy = dprY + dprH / 2;
+  c.save();
+  c.fillStyle = 'rgba(0,0,0,.22)';
+  c.fillRect(dprX - 8, dprY - 6, dprW + 20, dprH + 22);
+
+  // Sayap bangunan putih dengan fasad kaca gelap vertikal
+  c.fillStyle = '#eef2f6';
+  c.fillRect(dprX - 10, dprY + 12, dprW + 20, dprH - 22);
+  c.strokeStyle = '#94a3b8';
+  c.lineWidth = 2;
+  c.strokeRect(dprX - 10, dprY + 12, dprW + 20, dprH - 22);
+
+  c.fillStyle = '#1e293b';
+  c.fillRect(dprX + 6, dprY + 24, dprW - 12, dprH - 46);
+  c.strokeStyle = '#475569';
+  c.lineWidth = 1.5;
+  for (let gx = dprX + 14; gx < dprX + dprW - 14; gx += 10) {
+    c.beginPath();
+    c.moveTo(gx, dprY + 24);
+    c.lineTo(gx, dprY + dprH - 22);
+    c.stroke();
+  }
+
+  // Tangga utama lebar di bagian depan (lajur tengah terang & sisi gelap)
+  c.fillStyle = '#475569';
+  c.fillRect(dprCx - 44, dprY + dprH - 24, 88, 36);
+  c.fillStyle = '#e2e8f0';
+  c.fillRect(dprCx - 16, dprY + dprH - 24, 32, 36);
+  c.fillStyle = '#f8fafc';
+  c.fillRect(dprCx - 48, dprY + dprH - 26, 6, 38);
+  c.fillRect(dprCx + 42, dprY + dprH - 26, 6, 38);
+
+  // Kubah hijau kebiruan melengkung khas Gedung Nusantara + rusuk gelap tengah
+  [-48, 48].forEach(ox => {
+    c.fillStyle = '#488d7a';
+    c.beginPath();
+    c.ellipse(dprCx + ox, dprCy - 6, 56, 26, 0, 0, Math.PI * 2);
+    c.fill();
+    c.lineWidth = 2.5;
+    c.strokeStyle = '#2d4447';
+    c.stroke();
+  });
+  c.strokeStyle = '#333b42';
+  c.lineWidth = 6;
+  c.beginPath();
+  c.moveTo(dprCx - 14, dprCy + 16);
+  c.quadraticCurveTo(dprCx, dprCy - 34, dprCx + 14, dprCy + 16);
+  c.stroke();
+
+  // Tiang bendera Merah Putih di sisi kanan depan
+  const flagX = dprX + dprW + 6;
+  const flagY = dprY + dprH + 8;
+  c.strokeStyle = '#f8fafc';
+  c.lineWidth = 2;
+  c.beginPath();
+  c.moveTo(flagX, flagY);
+  c.lineTo(flagX, flagY - 34);
+  c.stroke();
+  c.fillStyle = '#dc2626';
+  c.fillRect(flagX, flagY - 34, 14, 5);
+  c.fillStyle = '#ffffff';
+  c.fillRect(flagX, flagY - 29, 14, 5);
+
+  // Plang nama GEDUNG NUSANTARA di sayap kiri
+  c.fillStyle = '#f8fafc';
+  c.fillRect(dprX - 6, dprY + 13, 108, 13);
+  c.fillStyle = '#1e293b';
+  c.font = 'bold 8.5px "Segoe UI", sans-serif';
+  c.textAlign = 'center';
+  c.fillText('GEDUNG NUSANTARA', dprX + 48, dprY + 22.5);
+  c.restore();
+
+  c.restore();
 }
 
-/* ===== KENDARAAN ===== */
-// Jenis kendaraan: panjang L, lebar w, faktor kecepatan vf, faktor percepatan acc
+/* ===== SIMULASI KENDARAAN REALISTIS PADA GRID 2x2 ===== */
 const VT = {
-  car:   { L: 32, w: 18, vf: 1,    acc: 1 },
-  moto:  { L: 18, w: 8,  vf: 1.15, acc: 1.4 },
-  bus:   { L: 48, w: 20, vf: .85,  acc: .75 },
-  truck: { L: 72, w: 20, vf: .75,  acc: .55 }   // kepala truk + bak panjang bersambung
+  car:   { L: 34, w: 18, vf: 1.0,  acc: 1.0 },
+  moto:  { L: 19, w: 8,  vf: 1.15, acc: 1.35 },
+  bus:   { L: 50, w: 20, vf: 0.86, acc: 0.75 },
+  truck: { L: 74, w: 20, vf: 0.76, acc: 0.55 }
 };
-const CARGO = ['#c8553d','#3d6fb5','#e4e4e4','#4b8b5a','#d9a441','#7a5ab5'];
+const CARGO = ['#c8553d', '#3d6fb5', '#e4e4e4', '#4b8b5a', '#d9a441', '#7a5ab5'];
+const COL = ['#d9453d', '#2f7fd1', '#f0c030', '#ececec', '#2e9d6a', '#7a4fc2', '#e8803a'];
 const cars = [], crashes = [];
-const COL = ['#d9453d','#2f7fd1','#f0c030','#ececec','#2e9d6a','#7a4fc2','#e8803a'];
-let spawnIntervalRange = { min: 1.5, max: 3.0 };
+const pedestrians = [], PED_COLORS = ['#e65c5c', '#4da6ff', '#ffd166', '#9b5de5', '#06d6a0', '#f78c6b', '#ef476f', '#118ab2'];
+let pedSpawnTimer = 0.2;
+let spawnIntervalRange = { min: 1.4, max: 2.8 };
+let spawnT = [0.4, 0.8, 1.2, 1.6];
+
 function updateDensity() {
   const m = $('cfg-density').value;
-  spawnIntervalRange = m === 'LOW' ? { min: 3, max: 5 } : m === 'HIGH' ? { min: .5, max: 1.2 } : { min: 1.5, max: 3 };
+  spawnIntervalRange = m === 'LOW'
+    ? { min: 2.8, max: 4.8 }
+    : m === 'HIGH'
+      ? { min: 0.55, max: 1.25 }
+      : { min: 1.3, max: 2.6 };
 }
-let spawnT = [0, 0, 0, 0];
 
-function spawn(d, viol = false) {
+// Titik masuk kendaraan di tepi grid 2x2 (arah 0=bawah, 1=atas, 2=kanan, 3=kiri)
+const ENTRY_POINTS = [
+  { d: 0, lane: 0, intId: 0, x: laneC(0, 0, 0), y: -45 },
+  { d: 0, lane: 1, intId: 0, x: laneC(0, 1, 0), y: -45 },
+  { d: 0, lane: 0, intId: 1, x: laneC(0, 0, 1), y: -45 },
+  { d: 0, lane: 1, intId: 1, x: laneC(0, 1, 1), y: -45 },
+  { d: 1, lane: 0, intId: 2, x: laneC(1, 0, 2), y: H + 45 },
+  { d: 1, lane: 1, intId: 2, x: laneC(1, 1, 2), y: H + 45 },
+  { d: 1, lane: 0, intId: 3, x: laneC(1, 0, 3), y: H + 45 },
+  { d: 1, lane: 1, intId: 3, x: laneC(1, 1, 3), y: H + 45 },
+  { d: 2, lane: 0, intId: 0, x: -45, y: laneC(2, 0, 0) },
+  { d: 2, lane: 1, intId: 0, x: -45, y: laneC(2, 1, 0) },
+  { d: 2, lane: 0, intId: 2, x: -45, y: laneC(2, 0, 2) },
+  { d: 2, lane: 1, intId: 2, x: -45, y: laneC(2, 1, 2) },
+  { d: 3, lane: 0, intId: 1, x: W + 45, y: laneC(3, 0, 1) },
+  { d: 3, lane: 1, intId: 1, x: W + 45, y: laneC(3, 1, 1) },
+  { d: 3, lane: 0, intId: 3, x: W + 45, y: laneC(3, 0, 3) },
+  { d: 3, lane: 1, intId: 3, x: W + 45, y: laneC(3, 1, 3) }
+];
+
+function spawnVehicle(dirGroup, viol = false) {
+  const candidates = ENTRY_POINTS.filter(ep => ep.d === dirGroup);
+  if (!candidates.length) return;
+  const ep = candidates[Math.random() * candidates.length | 0];
   const r = Math.random();
-  let it = r < .33 ? 'RIGHT' : r < .55 ? 'LEFT' : 'STRAIGHT';
-  const q = Math.random(), type = viol ? 'car' : q < .55 ? 'car' : q < .75 ? 'moto' : q < .88 ? 'bus' : 'truck';
-  if (viol) it = 'STRAIGHT'; else if ((type === 'truck' || type === 'bus') && Math.random() < .7) it = 'STRAIGHT';
-  const lane = it === 'RIGHT' ? 1 : 0, lc = laneC(d, lane);   // luar = belok kanan; dalam = lurus / belok kiri
-  const p = [[lc, -40], [lc, H + 40], [-40, lc], [W + 40, lc]][d];
-  if (cars.some(o => o.origin == d && o.lane == lane && !o.turned && !o.path && Math.hypot(o.x - p[0], o.y - p[1]) < 50 + (VT[o.type].L + VT[type].L) / 2)) return;
-  cars.push({ d, origin: d, lane, x: p[0], y: p[1], angle: Math.atan2(DIR[d][1], DIR[d][0]),
-    v: viol ? 120 : 80, col: viol ? '#ff0000' : COL[Math.random() * COL.length | 0], type,
-    ta: Math.atan2(DIR[d][1], DIR[d][0]), cargo: CARGO[Math.random() * CARGO.length | 0],
-    isViolator: viol, crashed: false, turnIntent: it, turned: false, path: null });
+  let it = r < 0.34 ? 'RIGHT' : r < 0.56 ? 'LEFT' : 'STRAIGHT';
+  const q = Math.random();
+  const type = viol ? 'car' : q < 0.55 ? 'car' : q < 0.76 ? 'moto' : q < 0.88 ? 'bus' : 'truck';
+  if (viol) it = 'STRAIGHT';
+  else if ((type === 'truck' || type === 'bus') && Math.random() < 0.72) it = 'STRAIGHT';
+
+  const lane = it === 'RIGHT' ? 1 : 0;
+  const lc = laneC(ep.d, lane, ep.intId);
+  const sx = ep.d < 2 ? lc : ep.x;
+  const sy = ep.d >= 2 ? lc : ep.y;
+
+  const minClearance = 56 + VT[type].L;
+  if (cars.some(o => Math.hypot(o.x - sx, o.y - sy) < minClearance)) return;
+
+  const ang = Math.atan2(DIR[ep.d][1], DIR[ep.d][0]);
+  cars.push({
+    d: ep.d,
+    origin: ep.d,
+    lane,
+    x: sx,
+    y: sy,
+    angle: ang,
+    ta: ang,
+    v: viol ? 130 : 82,
+    braking: false,
+    col: viol ? '#ff0000' : COL[Math.random() * COL.length | 0],
+    cargo: CARGO[Math.random() * CARGO.length | 0],
+    type,
+    isViolator: viol,
+    crashed: false,
+    turnIntent: it,
+    activeIntId: null,
+    handledInts: new Set(),
+    path: null,
+    hornCooldown: 0.4,
+    hornFlash: 0
+  });
 }
 
-// Lintasan belok: kurva Bezier dari lajur asal ke lajur tujuan (kanan -> lajur luar, kiri -> lajur dalam)
-function makePath(a) {
-  const right = a.turnIntent === 'RIGHT', nd = (right ? DEST.RIGHT : DEST.LEFT)[a.d];
-  const lc = laneC(a.d, a.lane), dc = laneC(nd, right ? 1 : 0);
+function findNextIntersectionAhead(car) {
+  let best = null, bestDist = Infinity;
+  for (let i = 0; i < INTS.length; i++) {
+    const s = INTS[i];
+    if (car.handledInts.has(s.id)) continue;
+    const dx = s.cx - car.x;
+    const dy = s.cy - car.y;
+    const forward = dx * DIR[car.d][0] + dy * DIR[car.d][1];
+    const perp = Math.abs(-dx * DIR[car.d][1] + dy * DIR[car.d][0]);
+    if (perp < HALF + 10 && forward > -HALF && forward < 220 && forward < bestDist) {
+      bestDist = forward;
+      best = s;
+    }
+  }
+  return best;
+}
+
+function makePathAtIntersection(a, s) {
+  const right = a.turnIntent === 'RIGHT';
+  const nd = (right ? DEST.RIGHT : DEST.LEFT)[a.d];
+  const lc = laneC(a.d, a.lane, s.id);
+  const dc = laneC(nd, right ? 1 : 0, s.id);
   let p0, p1, p2;
-  if (a.d < 2) { p0 = [lc, a.d == 0 ? cy - HALF : cy + HALF]; p1 = [lc, dc]; p2 = nd == 2 ? [cx + HALF, dc] : [cx - HALF, dc]; }
-  else { p0 = [a.d == 2 ? cx - HALF : cx + HALF, lc]; p1 = [dc, lc]; p2 = nd == 0 ? [dc, cy + HALF] : [dc, cy - HALF]; }
+  if (a.d < 2) {
+    p0 = [lc, a.d === 0 ? s.cy - HALF : s.cy + HALF];
+    p1 = [lc, dc];
+    p2 = nd === 2 ? [s.cx + HALF, dc] : [s.cx - HALF, dc];
+  } else {
+    p0 = [a.d === 2 ? s.cx - HALF : s.cx + HALF, lc];
+    p1 = [dc, lc];
+    p2 = nd === 0 ? [dc, s.cy + HALF] : [dc, s.cy - HALF];
+  }
   let len = 0, px = p0[0], py = p0[1];
   for (let i = 1; i <= 20; i++) {
-    const t = i / 20, u = 1 - t, x = u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0], y = u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1];
-    len += Math.hypot(x - px, y - py); px = x; py = y;
+    const t = i / 20, u = 1 - t;
+    const x = u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0];
+    const y = u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1];
+    len += Math.hypot(x - px, y - py);
+    px = x; py = y;
   }
-  a.path = { p0, p1, p2, len, s: 0, nd };
+  a.path = { p0, p1, p2, len, s: 0, nd, intId: s.id };
 }
 
-function triggerSingleViolator() {
-  const o = cur().out, red = [];
-  if (o[0]) red.push(0); if (o[6]) red.push(1); if (o[9]) red.push(2); if (o[3]) red.push(3);
-  if (red.length) spawn(red[Math.random() * red.length | 0], true);
-}
 function clearCrashedVehicles() {
-  for (let i = cars.length - 1; i >= 0; i--) if (cars[i].crashed) cars.splice(i, 1);
+  for (let i = cars.length - 1; i >= 0; i--) {
+    if (cars[i].crashed) cars.splice(i, 1);
+  }
   crashes.length = 0;
 }
+
 function sigState(d, o, emg) {
   if (emg) return 'F';
-  const m = [[o[0],o[1],o[2]],[o[6],o[7],o[8]],[o[9],o[10],o[11]],[o[3],o[4],o[5]]][d];
+  const m = [
+    [o[0], o[1], o[2]],
+    [o[6], o[7], o[8]],
+    [o[9], o[10], o[11]],
+    [o[3], o[4], o[5]]
+  ][d];
   return m[2] ? 'G' : m[1] ? 'Y' : m[0] ? 'R' : 'F';
 }
-const inBox = (b, m = 0) => Math.abs(b.x - cx) < HALF + m && Math.abs(b.y - cy) < HALF + m;
 
-// Tumbukan kotak berorientasi (SAT): dua persegi panjang bertabrakan bila tak ada sumbu pemisah
-function hit(p, q) {
+function inAnyBox(b, margin = 0) {
+  return INTS.some(s => Math.abs(b.x - s.cx) < HALF + margin && Math.abs(b.y - s.cy) < HALF + margin);
+}
+
+function hitBox(p, q) {
   const ext = (r, u) => {
-    const T = VT[r.type], c = Math.cos(r.angle), s = Math.sin(r.angle);
-    return T.L / 2 * Math.abs(c * u[0] + s * u[1]) + T.w / 2 * Math.abs(-s * u[0] + c * u[1]);
+    const T = VT[r.type], ca = Math.cos(r.angle), sa = Math.sin(r.angle);
+    return T.L / 2 * Math.abs(ca * u[0] + sa * u[1]) + T.w / 2 * Math.abs(-sa * u[0] + ca * u[1]);
   };
   const dx = q.x - p.x, dy = q.y - p.y;
   return [p.angle, p.angle + Math.PI / 2, q.angle, q.angle + Math.PI / 2].every(a => {
     const u = [Math.cos(a), Math.sin(a)];
-    return Math.abs(dx * u[0] + dy * u[1]) < (ext(p, u) + ext(q, u)) * .9;
+    return Math.abs(dx * u[0] + dy * u[1]) < (ext(p, u) + ext(q, u)) * 0.9;
   });
 }
 
-function moveCars(dt, s) {
-  const o = s.out, rule = $('cfg-left-turn').value;
+function moveCars(dt) {
+  const rule = $('cfg-left-turn').value;
   spawnT = spawnT.map((t, d) => {
     t -= dt;
-    if (t <= 0) { spawn(d); return spawnIntervalRange.min + Math.random() * (spawnIntervalRange.max - spawnIntervalRange.min); }
+    if (t <= 0) {
+      spawnVehicle(d, false);
+      return spawnIntervalRange.min + Math.random() * (spawnIntervalRange.max - spawnIntervalRange.min);
+    }
     return t;
   });
 
   cars.forEach(a => {
     if (a.crashed) return;
+    if ((a.hornCooldown || 0) > 0) a.hornCooldown = Math.max(0, a.hornCooldown - dt);
+    if ((a.hornFlash || 0) > 0) a.hornFlash = Math.max(0, a.hornFlash - dt);
+
     const VA = VT[a.type], L = VA.L, [dx, dy] = DIR[a.d];
-    let tv = (a.turnIntent === 'RIGHT' ? 75 : a.turnIntent === 'LEFT' ? 85 : 100) * VA.vf;
+    let tv = (a.turnIntent === 'RIGHT' ? 78 : a.turnIntent === 'LEFT' ? 88 : 105) * VA.vf;
 
-    if (!a.turned && !a.path) {
-      const fx = a.x + dx * L / 2, fy = a.y + dy * L / 2;
-      const dist = a.d == 0 ? cy - STOP - fy : a.d == 1 ? fy - (cy + STOP) : a.d == 2 ? cx - STOP - fx : fx - (cx + STOP);
-      const st = sigState(a.d, o, s.emg);
-      const free = rule === 'ALWAYS' && a.turnIntent === 'RIGHT';       // rambu belok kanan jalan terus
-      if (a.isViolator) tv = 135;
-      else if (st == 'F') tv *= .55;
-      else if (!free) {
-        if (st == 'R' || (st == 'Y' && dist > 20)) {
-          if (dist > -5 && dist <= 4) tv = 0; else if (dist > 4 && dist < 130) tv = Math.min(tv, (dist - 4) * 1.5);
-        } else if (dist > -5 && dist < 10 && cars.some(b => b !== a && !b.crashed && b.origin !== a.origin && inBox(b))) tv = 0; // tunggu simpang kosong
+    if (!a.path) {
+      const nearInt = findNextIntersectionAhead(a);
+      if (nearInt) {
+        const pState = cur(nearInt.id);
+        const o = pState.out || OUTS_4PHASE[2];
+        const fx = a.x + dx * L / 2;
+        const fy = a.y + dy * L / 2;
+        const distToStop = a.d === 0
+          ? (nearInt.cy - STOP) - fy
+          : a.d === 1
+            ? fy - (nearInt.cy + STOP)
+            : a.d === 2
+              ? (nearInt.cx - STOP) - fx
+              : fx - (nearInt.cx + STOP);
+
+        const st = sigState(a.d, o, pState.emg);
+        const freeRight = rule === 'ALWAYS' && a.turnIntent === 'RIGHT';
+
+        if (!pState.run) {
+          if (distToStop > -6 && distToStop <= 5) tv = 0;
+          else if (distToStop > 5 && distToStop < 140) tv = Math.min(tv, (distToStop - 5) * 1.6);
+        } else if (pState.emg) {
+          tv *= 0.55;
+        } else if (!freeRight) {
+          if (st === 'R' || (st === 'Y' && distToStop > 22)) {
+            if (distToStop > -6 && distToStop <= 5) tv = 0;
+            else if (distToStop > 5 && distToStop < 140) tv = Math.min(tv, (distToStop - 5) * 1.6);
+          } else if (distToStop > -6 && distToStop < 12) {
+            const occupied = cars.some(b => b !== a && !b.crashed && b.origin !== a.origin && Math.abs(b.x - nearInt.cx) < HALF && Math.abs(b.y - nearInt.cy) < HALF);
+            if (occupied) {
+              tv = 0;
+              if (a.v > 22) triggerCarHorn(a, 2.2);
+            }
+          }
+        }
+
+        const enteredBox = a.d === 0
+          ? a.y >= nearInt.cy - HALF
+          : a.d === 1
+            ? a.y <= nearInt.cy + HALF
+            : a.d === 2
+              ? a.x >= nearInt.cx - HALF
+              : a.x <= nearInt.cx + HALF;
+
+        if (enteredBox) {
+          a.handledInts.add(nearInt.id);
+          if (a.turnIntent !== 'STRAIGHT') {
+            makePathAtIntersection(a, nearInt);
+          }
+        }
       }
-      if (a.turnIntent !== 'STRAIGHT' && (a.d == 0 ? a.y >= cy - HALF : a.d == 1 ? a.y <= cy + HALF : a.d == 2 ? a.x >= cx - HALF : a.x <= cx + HALF)) makePath(a);
+    } else {
+      tv = Math.min(tv, 74 * VA.vf);
     }
-    if (a.path) tv = Math.min(tv, 70 * VA.vf);
 
-    // Mengikuti kendaraan di depan (searah, lajur sama, termasuk bangkai)
+    // Ikuti kendaraan di depan / pejalan kaki yang menyebrang
     const ca = Math.cos(a.angle), sa = Math.sin(a.angle);
     cars.forEach(b => {
       if (b === a) return;
-      const rx = b.x - a.x, ry = b.y - a.y, f = rx * ca + ry * sa, l = Math.abs(-rx * sa + ry * ca);
-      if (f > 0 && l < (VA.w + VT[b.type].w) / 2 + 3 && Math.cos(b.angle - a.angle) > .8) {
+      const rx = b.x - a.x, ry = b.y - a.y;
+      const f = rx * ca + ry * sa;
+      const l = Math.abs(-rx * sa + ry * ca);
+      if (f > 0 && l < (VA.w + VT[b.type].w) / 2 + 4 && Math.cos(b.angle - a.angle) > 0.75) {
         const Lb = (L + VT[b.type].L) / 2;
-        if (f < Lb + 60) tv = Math.min(tv, Math.max(0, (f - Lb - 6) * 3));
+        if (f < Lb + 64) {
+          tv = Math.min(tv, Math.max(0, (f - Lb - 7) * 3.1));
+          if (f < Lb + 22 && a.v > 38 && Math.random() < 0.04) triggerCarHorn(a, 2.4);
+        }
       }
     });
 
-    a.v += Math.max(-300 * dt, Math.min(120 * VA.acc * dt, tv - a.v));
+    pedestrians.forEach(p => {
+      if (p.state !== 'CROSSING') return;
+      const rx = p.x - a.x, ry = p.y - a.y;
+      const f = rx * ca + ry * sa;
+      const l = Math.abs(-rx * sa + ry * ca);
+      if (f > 0 && f < L / 2 + 26 && l < VA.w / 2 + 10) {
+        tv = Math.min(tv, Math.max(0, (f - L / 2 - 8) * 2.5));
+        if (f < L / 2 + 16 && a.v > 24) triggerCarHorn(a, 2.0);
+      }
+    });
+
+    a.braking = tv < a.v - 8;
+    a.v += Math.max(-320 * dt, Math.min(125 * VA.acc * dt, tv - a.v));
+
     if (a.path) {
-      const p = a.path; p.s += a.v * dt;
+      const p = a.path;
+      p.s += a.v * dt;
       const t = Math.min(1, p.s / p.len), u = 1 - t;
-      a.x = u*u*p.p0[0] + 2*u*t*p.p1[0] + t*t*p.p2[0];
-      a.y = u*u*p.p0[1] + 2*u*t*p.p1[1] + t*t*p.p2[1];
-      a.angle = Math.atan2(2*u*(p.p1[1]-p.p0[1]) + 2*t*(p.p2[1]-p.p1[1]), 2*u*(p.p1[0]-p.p0[0]) + 2*t*(p.p2[0]-p.p1[0]));
-      if (t >= 1) { a.d = p.nd; a.path = null; a.turned = true; a.angle = Math.atan2(DIR[a.d][1], DIR[a.d][0]); }
-    } else { a.x += ca * a.v * dt; a.y += sa * a.v * dt; }
-    if (a.type === 'truck') {   // bak truk mengikuti kepala dengan sedikit tertinggal saat berbelok
-      let da = a.angle - a.ta; da = Math.atan2(Math.sin(da), Math.cos(da));
+      a.x = u * u * p.p0[0] + 2 * u * t * p.p1[0] + t * t * p.p2[0];
+      a.y = u * u * p.p0[1] + 2 * u * t * p.p1[1] + t * t * p.p2[1];
+      a.angle = Math.atan2(
+        2 * u * (p.p1[1] - p.p0[1]) + 2 * t * (p.p2[1] - p.p1[1]),
+        2 * u * (p.p1[0] - p.p0[0]) + 2 * t * (p.p2[0] - p.p1[0])
+      );
+      if (t >= 1) {
+        a.d = p.nd;
+        a.path = null;
+        a.angle = Math.atan2(DIR[a.d][1], DIR[a.d][0]);
+      }
+    } else {
+      a.x += ca * a.v * dt;
+      a.y += sa * a.v * dt;
+    }
+
+    if (a.type === 'truck') {
+      let da = a.angle - a.ta;
+      da = Math.atan2(Math.sin(da), Math.cos(da));
       a.ta += da * Math.min(1, a.v * dt / 45);
     }
   });
 
-  // Tabrakan di dalam simpang (kendaraan dari arah asal berbeda)
-  for (let i = 0; i < cars.length; i++) for (let j = i + 1; j < cars.length; j++) {
-    const c1 = cars[i], c2 = cars[j];
-    if (c1.origin !== c2.origin && !c1.crashed && !c2.crashed && inBox(c1, 8) && inBox(c2, 8) && hit(c1, c2)) {
-      c1.crashed = c2.crashed = true; c1.v = c2.v = 0;
-      crashes.push({ x: (c1.x + c2.x) / 2, y: (c1.y + c2.y) / 2, life: 2, maxLife: 2 });
+  // Deteksi tabrakan di persimpangan
+  for (let i = 0; i < cars.length; i++) {
+    for (let j = i + 1; j < cars.length; j++) {
+      const c1 = cars[i], c2 = cars[j];
+      if (c1.origin !== c2.origin && !c1.crashed && !c2.crashed && inAnyBox(c1, 8) && inAnyBox(c2, 8) && hitBox(c1, c2)) {
+        c1.crashed = c2.crashed = true;
+        c1.v = c2.v = 0;
+        crashes.push({ x: (c1.x + c2.x) / 2, y: (c1.y + c2.y) / 2, life: 2, maxLife: 2 });
+      }
     }
   }
+
   for (let i = cars.length - 1; i >= 0; i--) {
     const a = cars[i];
-    if (!a.crashed && (a.x < -80 || a.x > W + 80 || a.y < -80 || a.y > H + 80)) cars.splice(i, 1);
+    if (!a.crashed && (a.x < -140 || a.x > W + 140 || a.y < -140 || a.y > H + 140)) {
+      cars.splice(i, 1);
+    }
   }
 }
 
 function drawVehicle(a) {
   const t = VT[a.type], L = t.L, w = t.w, dead = a.crashed;
-  if (a.type === 'truck') {   // bak panjang (digambar di koordinat dunia karena sudutnya sendiri)
-    const hx = a.x + Math.cos(a.angle) * 12, hy = a.y + Math.sin(a.angle) * 12;
-    c.save(); c.translate(hx - Math.cos(a.ta) * 23, hy - Math.sin(a.ta) * 23); c.rotate(a.ta);
-    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(-21, -8, 46, 20);
-    c.fillStyle = dead ? '#333' : a.cargo; c.beginPath(); c.roundRect(-23, -10, 46, 20, 2); c.fill();
-    c.strokeStyle = 'rgba(0,0,0,.28)'; c.lineWidth = 1;
-    for (let i = -16; i <= 16; i += 8) { c.beginPath(); c.moveTo(i, -10); c.lineTo(i, 10); c.stroke(); }
+  const wheelSpin = ((a.x * 0.16 + a.y * 0.16) % (Math.PI * 2));
+  const steerAng = (!dead && a.path) ? (a.turnIntent === 'LEFT' ? -0.35 : a.turnIntent === 'RIGHT' ? 0.35 : 0) : 0;
+
+  const drawWheel2d = (wx, wy, rad, thick) => {
+    c.save();
+    c.translate(wx, wy);
+    c.fillStyle = '#14171d';
+    c.beginPath();
+    c.roundRect(-rad, -thick / 2, rad * 2, thick, 1.5);
+    c.fill();
+    c.strokeStyle = '#9aa5b4';
+    c.lineWidth = 0.8;
+    const spokeX = Math.cos(wheelSpin) * (rad * 0.45);
+    c.beginPath();
+    c.moveTo(-spokeX, -thick / 2 + 0.5);
+    c.lineTo(spokeX, thick / 2 - 0.5);
+    c.stroke();
     c.restore();
+  };
+
+  if (a.type === 'truck') {
+    const hx = a.x + Math.cos(a.angle) * 12, hy = a.y + Math.sin(a.angle) * 12;
+    const tx = hx - Math.cos(a.ta) * 24, ty = hy - Math.sin(a.ta) * 24;
+    c.save();
+    c.translate(tx, ty);
+    c.rotate(a.ta);
+    // Bayangan kontainer & sasis
+    c.fillStyle = 'rgba(0,0,0,.28)';
+    c.fillRect(-22, -8.5, 48, 21);
+    // Roda trailer
+    [-14, 14].forEach(twx => {
+      drawWheel2d(twx, -w / 2 - 1.2, 4.2, 2.6);
+      drawWheel2d(twx, w / 2 + 1.2, 4.2, 2.6);
+    });
+    // Bodi kontainer/boks kargo
+    c.fillStyle = dead ? '#333' : a.cargo;
+    c.beginPath(); c.roundRect(-24, -w / 2, 48, w, 2.5); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.28)';
+    c.lineWidth = 1;
+    c.strokeRect(-23.5, -w / 2 + 0.5, 47, w - 1);
+    // Rusuk bergelombang boks
+    c.strokeStyle = 'rgba(0,0,0,.25)';
+    for (let i = -18; i <= 18; i += 6) {
+      c.beginPath(); c.moveTo(i, -w / 2 + 1.5); c.lineTo(i, w / 2 - 1.5); c.stroke();
+    }
+    // Lampu belakang trailer
+    c.fillStyle = a.braking && !dead ? '#ff2424' : '#7a1c1c';
+    c.fillRect(-24.2, -w / 2 + 2, 2.2, 3.8);
+    c.fillRect(-24.2, w / 2 - 5.8, 2.2, 3.8);
+    c.restore();
+
+    // Batang penghubung (kingpin/hitch)
+    c.strokeStyle = '#262b34';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(hx - Math.cos(a.angle) * 7, hy - Math.sin(a.angle) * 7);
+    c.lineTo(tx + Math.cos(a.ta) * 22, ty + Math.sin(a.ta) * 22);
+    c.stroke();
   }
-  c.save(); c.translate(a.x, a.y); c.rotate(a.angle);
+
+  c.save();
+  c.translate(a.x, a.y);
+  c.rotate(a.angle);
+
   if (a.type === 'moto') {
-    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(-8, -3, 18, 8);
-    c.fillStyle = dead ? '#333' : '#22262d'; c.beginPath(); c.roundRect(-9, -2.5, 18, 5, 2); c.fill();
-    c.fillRect(4, -5, 2, 10);                                          // stang
-    c.fillStyle = dead ? '#555' : a.col; c.beginPath(); c.ellipse(-1, 0, 3.5, 5.5, 0, 0, 7); c.fill();  // pengendara
-    c.fillStyle = dead ? '#777' : '#f2f2f2'; c.beginPath(); c.arc(1, 0, 3.2, 0, 7); c.fill();           // helm
+    c.fillStyle = 'rgba(0,0,0,.26)';
+    c.beginPath(); c.ellipse(0, 1.5, 9.5, 4.5, 0, 0, Math.PI * 2); c.fill();
+    // Roda depan & belakang
+    drawWheel2d(-6.5, 0, 3.4, 2.4);
+    c.save();
+    c.translate(6.5, 0);
+    c.rotate(steerAng);
+    drawWheel2d(0, 0, 3.4, 2.4);
+    c.restore();
+    // Rangka & tangki motor
+    c.fillStyle = dead ? '#333' : '#1f242c';
+    c.beginPath(); c.roundRect(-8.5, -2.2, 16, 4.4, 2); c.fill();
+    c.fillStyle = dead ? '#555' : a.col;
+    c.beginPath(); c.ellipse(1.5, 0, 4.2, 2.8, 0, 0, Math.PI * 2); c.fill();
+    // Stang kemudi & spion
+    c.save();
+    c.translate(5.2, 0);
+    c.rotate(steerAng);
+    c.strokeStyle = '#9aa5b4';
+    c.lineWidth = 1.8;
+    c.beginPath(); c.moveTo(0, -5.6); c.lineTo(0, 5.6); c.stroke();
+    c.restore();
+    // Pengendara & helm
+    c.fillStyle = dead ? '#555' : '#2d3748';
+    c.beginPath(); c.ellipse(-1.5, 0, 3.4, 4.8, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = dead ? '#777' : '#f8fafc';
+    c.beginPath(); c.arc(0.8, 0, 3.1, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#1e293b';
+    c.beginPath(); c.arc(2.4, 0, 1.8, -0.8, 0.8); c.fill();
+    // Lampu depan motor
+    c.fillStyle = dead ? '#444' : '#fff7cc';
+    c.beginPath(); c.arc(8.8, 0, 1.7, 0, Math.PI * 2); c.fill();
   } else {
     const bl = a.type === 'truck' ? 24 : L, ox = a.type === 'truck' ? 24 : 0;
-    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(ox - bl / 2 + 2, -w / 2 + 1, bl, w);
-    c.fillStyle = dead ? '#333' : a.isViolator ? '#ff0000' : a.col;
-    c.beginPath(); c.roundRect(ox - bl / 2, -w / 2, bl, w, 4); c.fill();
-    if (a.type === 'bus') {
-      c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(-L / 2 + 4, -w / 2 + 4, L - 16, w - 8);
-      c.fillStyle = 'rgba(30,45,60,.8)'; for (let i = -L / 2 + 6; i < L / 2 - 14; i += 9) { c.fillRect(i, -w / 2 + 1, 6, 3); c.fillRect(i, w / 2 - 4, 6, 3); }
+    // Bayangan bodi kendaraan
+    c.fillStyle = 'rgba(0,0,0,.28)';
+    c.beginPath(); c.roundRect(ox - bl / 2 + 2.5, -w / 2 + 2, bl, w, 4.5); c.fill();
+
+    // Roda depan & belakang
+    drawWheel2d(ox - bl * 0.29, -w / 2 - 1.1, a.type === 'car' ? 3.5 : 4.2, 2.5);
+    drawWheel2d(ox - bl * 0.29, w / 2 + 1.1, a.type === 'car' ? 3.5 : 4.2, 2.5);
+    c.save();
+    c.translate(ox + bl * 0.29, -w / 2 - 1.1);
+    c.rotate(steerAng);
+    drawWheel2d(0, 0, a.type === 'car' ? 3.5 : 4.2, 2.5);
+    c.restore();
+    c.save();
+    c.translate(ox + bl * 0.29, w / 2 + 1.1);
+    c.rotate(steerAng);
+    drawWheel2d(0, 0, a.type === 'car' ? 3.5 : 4.2, 2.5);
+    c.restore();
+
+    // Bodi utama
+    c.fillStyle = dead ? '#333' : a.col;
+    c.beginPath(); c.roundRect(ox - bl / 2, -w / 2, bl, w, 4.2); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.22)';
+    c.lineWidth = 1;
+    c.stroke();
+
+    if (a.type === 'car') {
+      // Kap mesin & garis kontur
+      c.fillStyle = dead ? '#3b3b3b' : 'rgba(255,255,255,.12)';
+      c.beginPath(); c.roundRect(ox + bl * 0.14, -w / 2 + 2.5, bl * 0.3, w - 5, 2.5); c.fill();
+      // Kaca depan & belakang
+      c.fillStyle = '#1e2c3b';
+      c.beginPath(); c.roundRect(ox + bl * 0.03, -w / 2 + 2.6, 5.5, w - 5.2, 1.5); c.fill();
+      c.beginPath(); c.roundRect(ox - bl * 0.28, -w / 2 + 3, 4.5, w - 6, 1.5); c.fill();
+      // Atap & sunroof / kaca samping
+      c.fillStyle = dead ? '#444' : a.col;
+      c.beginPath(); c.roundRect(ox - bl * 0.21, -w / 2 + 3.2, bl * 0.26, w - 6.4, 2.5); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.16)';
+      c.fillRect(ox - bl * 0.14, -w / 2 + 5, bl * 0.13, w - 10);
+      // Spion samping
+      c.fillStyle = dead ? '#333' : '#1e242c';
+      c.fillRect(ox + bl * 0.08, -w / 2 - 2.2, 2.6, 2.4);
+      c.fillRect(ox + bl * 0.08, w / 2 - 0.2, 2.6, 2.4);
+    } else if (a.type === 'bus') {
+      // Atap bus & AC unit
+      c.fillStyle = dead ? '#3e3e3e' : 'rgba(255,255,255,.18)';
+      c.beginPath(); c.roundRect(-bl / 2 + 4, -w / 2 + 3.2, bl - 8, w - 6.4, 2.5); c.fill();
+      c.fillStyle = '#cbd5e1';
+      c.fillRect(-bl * 0.22, -5.5, 11, 11);
+      c.fillRect(bl * 0.04, -5.5, 11, 11);
+      // Deretan kaca samping
+      c.fillStyle = '#1e2d3d';
+      for (let i = -bl / 2 + 6; i < bl / 2 - 12; i += 8.2) {
+        c.fillRect(i, -w / 2 + 0.8, 5.6, 2.2);
+        c.fillRect(i, w / 2 - 3.0, 5.6, 2.2);
+      }
+      // Kaca depan lebar
+      c.fillStyle = '#172330';
+      c.fillRect(bl / 2 - 5.2, -w / 2 + 2.2, 3.6, w - 4.4);
+    } else {
+      // Kabin truk
+      c.fillStyle = dead ? '#3d3d3d' : 'rgba(255,255,255,.14)';
+      c.beginPath(); c.roundRect(ox - bl / 2 + 3, -w / 2 + 3, bl - 6, w - 6, 2.5); c.fill();
+      c.fillStyle = '#1a2634';
+      c.fillRect(ox + bl / 2 - 6.5, -w / 2 + 2.4, 4.4, w - 4.8);
+      c.fillStyle = dead ? '#333' : '#1e242c';
+      c.fillRect(ox + bl * 0.14, -w / 2 - 2.4, 3.2, 2.6);
+      c.fillRect(ox + bl * 0.14, w / 2 - 0.2, 3.2, 2.6);
     }
-    c.fillStyle = 'rgba(30,45,60,.75)'; c.fillRect(ox + bl / 2 - 9, -w / 2 + 2, 5, w - 4);   // kaca depan
-    if (a.type === 'car') c.fillRect(-L / 2 + 4, -7, 5, 14);
-  }
-  if (!dead && a.turnIntent !== 'STRAIGHT' && !a.turned && Math.floor(performance.now() / 250) % 2 === 0) {
-    const sy = a.turnIntent === 'LEFT' ? -w / 2 : w / 2, fx = a.type === 'truck' ? 33 : L / 2 - 3;
-    c.fillStyle = '#ffaa00'; c.shadowColor = '#ffaa00'; c.shadowBlur = 6;
-    c.beginPath(); c.arc(fx, sy, 2.3, 0, 7); c.fill();
-    if (a.type !== 'truck') { c.beginPath(); c.arc(-L / 2 + 3, sy, 2.3, 0, 7); c.fill(); }
+
+    // Lampu utama depan (headlight)
+    c.fillStyle = dead ? '#3a3a3a' : '#fff6c7';
+    c.fillRect(ox + bl / 2 - 1.8, -w / 2 + 2.2, 2.2, 3.6);
+    c.fillRect(ox + bl / 2 - 1.8, w / 2 - 5.8, 2.2, 3.6);
+
+    // Lampu rem belakang
+    c.fillStyle = a.braking && !dead ? '#ff2424' : '#7a1c1c';
+    if (a.braking && !dead) {
+      c.shadowColor = '#ff2424';
+      c.shadowBlur = 7;
+    }
+    c.fillRect(ox - bl / 2 - 0.4, -w / 2 + 2.2, 2.5, 4.0);
+    c.fillRect(ox - bl / 2 - 0.4, w / 2 - 6.2, 2.5, 4.0);
     c.shadowBlur = 0;
   }
-  if (a.isViolator && !dead) { c.fillStyle = '#ffff00'; c.beginPath(); c.arc(0, 0, 5, 0, 7); c.fill(); }
+
+  if (!dead && a.turnIntent !== 'STRAIGHT' && !a.path && Math.floor(performance.now() / 250) % 2 === 0) {
+    const sy = a.turnIntent === 'LEFT' ? -w / 2 : w / 2, fx = a.type === 'truck' ? 35 : L / 2 - 2;
+    c.fillStyle = '#ffaa00';
+    c.shadowColor = '#ffaa00';
+    c.shadowBlur = 6;
+    c.beginPath(); c.arc(fx, sy, 2.4, 0, Math.PI * 2); c.fill();
+    if (a.type !== 'truck') {
+      c.beginPath(); c.arc(-L / 2 + 2.5, sy, 2.4, 0, Math.PI * 2); c.fill();
+    }
+    c.shadowBlur = 0;
+  }
+  if (!dead && (a.hornFlash || 0) > 0) {
+    const alpha = Math.min(0.95, a.hornFlash * 3.4);
+    const fx = a.type === 'truck' ? 36 : L / 2 + 4;
+    c.strokeStyle = `rgba(255, 224, 72, ${alpha})`;
+    c.lineWidth = 2.2;
+    c.beginPath();
+    c.arc(fx, 0, 7 + (0.28 - a.hornFlash) * 22, -0.65, 0.65);
+    c.stroke();
+  }
   c.restore();
 }
 
 function drawCars() {
+  c.save();
+  c.translate(W / 2, H / 2);
+  c.scale(cam2d.zoom, cam2d.zoom);
+  c.translate(-cam2d.x, -cam2d.y);
+
   cars.forEach(drawVehicle);
+
   for (let i = crashes.length - 1; i >= 0; i--) {
-    const cr = crashes[i], al = cr.life / cr.maxLife;
-    c.save(); c.translate(cr.x, cr.y);
-    c.fillStyle = `rgba(255,75,69,${al})`; c.beginPath(); c.arc(0, 0, 30 * (2 - al), 0, 7); c.fill();
-    c.fillStyle = `rgba(255,200,58,${al})`; c.beginPath(); c.arc(0, 0, 18 * (2 - al), 0, 7); c.fill();
-    c.fillStyle = `rgba(255,255,255,${al})`; c.font = 'bold 16px "Segoe UI", sans-serif'; c.textAlign = 'center'; c.fillText('CRASH!', 0, -30);
+    const cr = crashes[i];
+    const al = cr.life / cr.maxLife;
+    c.save();
+    c.translate(cr.x, cr.y);
+    c.fillStyle = `rgba(255,75,69,${al})`;
+    c.beginPath(); c.arc(0, 0, 32 * (2 - al), 0, Math.PI * 2); c.fill();
+    c.fillStyle = `rgba(255,200,58,${al})`;
+    c.beginPath(); c.arc(0, 0, 19 * (2 - al), 0, Math.PI * 2); c.fill();
+    c.fillStyle = `rgba(255,255,255,${al})`;
+    c.font = 'bold 18px "Segoe UI", sans-serif';
+    c.textAlign = 'center';
+    c.fillText('CRASH!', 0, -32);
     c.restore();
-    cr.life -= .015; if (cr.life <= 0) crashes.splice(i, 1);
+    cr.life -= 0.015;
+    if (cr.life <= 0) crashes.splice(i, 1);
   }
+
+  c.restore();
+}
+
+// Rute penyeberangan (CROSS) dan rute trotoar (SIDEWALK) pada tiap persimpangan & koridor
+function getIntersectionPedRoutes(s) {
+  const cx = s.cx, cy = s.cy;
+  return [
+    // Menyebrang jalan Utara-Selatan tepat di strip zebra cross sisi barat & timur
+    { kind: 'CROSS', lightDir: 2, x1: cx - 91, y1: cy - 72, x2: cx - 91, y2: cy + 72 },
+    { kind: 'CROSS', lightDir: 3, x1: cx + 91, y1: cy + 72, x2: cx + 91, y2: cy - 72 },
+    // Menyebrang jalan Barat-Timur tepat di strip zebra cross sisi utara & selatan
+    { kind: 'CROSS', lightDir: 0, x1: cx - 72, y1: cy - 91, x2: cx + 72, y2: cy - 91 },
+    { kind: 'CROSS', lightDir: 1, x1: cx + 72, y1: cy + 91, x2: cx - 72, y2: cy + 91 }
+  ];
+}
+
+// Rute trotoar lurus sejajar jalan utama pada grid 2x2 (di luar zona persimpangan)
+const CORRIDOR_SIDEWALK_ROUTES = [
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[0] - HALF - 8, x1: 12, y1: ROW_Y[0] - HALF - 8, x2: COL_X[0] - HALF - 14, y2: ROW_Y[0] - HALF - 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[0] - HALF - 8, x1: COL_X[0] + HALF + 14, y1: ROW_Y[0] - HALF - 8, x2: COL_X[1] - HALF - 14, y2: ROW_Y[0] - HALF - 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[0] - HALF - 8, x1: COL_X[1] + HALF + 14, y1: ROW_Y[0] - HALF - 8, x2: W - 12, y2: ROW_Y[0] - HALF - 8 },
+
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[0] + HALF + 8, x1: 12, y1: ROW_Y[0] + HALF + 8, x2: COL_X[0] - HALF - 14, y2: ROW_Y[0] + HALF + 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[0] + HALF + 8, x1: COL_X[0] + HALF + 14, y1: ROW_Y[0] + HALF + 8, x2: COL_X[1] - HALF - 14, y2: ROW_Y[0] + HALF + 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[0] + HALF + 8, x1: COL_X[1] + HALF + 14, y1: ROW_Y[0] + HALF + 8, x2: W - 12, y2: ROW_Y[0] + HALF + 8 },
+
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[1] - HALF - 8, x1: 12, y1: ROW_Y[1] - HALF - 8, x2: COL_X[0] - HALF - 14, y2: ROW_Y[1] - HALF - 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[1] - HALF - 8, x1: COL_X[0] + HALF + 14, y1: ROW_Y[1] - HALF - 8, x2: COL_X[1] - HALF - 14, y2: ROW_Y[1] - HALF - 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[1] - HALF - 8, x1: COL_X[1] + HALF + 14, y1: ROW_Y[1] - HALF - 8, x2: W - 12, y2: ROW_Y[1] - HALF - 8 },
+
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[1] + HALF + 8, x1: 12, y1: ROW_Y[1] + HALF + 8, x2: COL_X[0] - HALF - 14, y2: ROW_Y[1] + HALF + 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[1] + HALF + 8, x1: COL_X[0] + HALF + 14, y1: ROW_Y[1] + HALF + 8, x2: COL_X[1] - HALF - 14, y2: ROW_Y[1] + HALF + 8 },
+  { kind: 'SIDEWALK', axis: 'H', fixed: ROW_Y[1] + HALF + 8, x1: COL_X[1] + HALF + 14, y1: ROW_Y[1] + HALF + 8, x2: W - 12, y2: ROW_Y[1] + HALF + 8 },
+
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[0] - HALF - 8, x1: COL_X[0] - HALF - 8, y1: 12, x2: COL_X[0] - HALF - 8, y2: ROW_Y[0] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[0] - HALF - 8, x1: COL_X[0] - HALF - 8, y1: ROW_Y[0] + HALF + 14, y2: ROW_Y[1] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[0] - HALF - 8, x1: COL_X[0] - HALF - 8, y1: ROW_Y[1] + HALF + 14, y2: H - 12 },
+
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[0] + HALF + 8, x1: COL_X[0] + HALF + 8, y1: 12, x2: COL_X[0] + HALF + 8, y2: ROW_Y[0] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[0] + HALF + 8, x1: COL_X[0] + HALF + 8, y1: ROW_Y[0] + HALF + 14, y2: ROW_Y[1] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[0] + HALF + 8, x1: COL_X[0] + HALF + 8, y1: ROW_Y[1] + HALF + 14, y2: H - 12 },
+
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[1] - HALF - 8, x1: COL_X[1] - HALF - 8, y1: 12, x2: COL_X[1] - HALF - 8, y2: ROW_Y[0] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[1] - HALF - 8, x1: COL_X[1] - HALF - 8, y1: ROW_Y[0] + HALF + 14, y2: ROW_Y[1] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[1] - HALF - 8, x1: COL_X[1] - HALF - 8, y1: ROW_Y[1] + HALF + 14, y2: H - 12 },
+
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[1] + HALF + 8, x1: COL_X[1] + HALF + 8, y1: 12, x2: COL_X[1] + HALF + 8, y2: ROW_Y[0] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[1] + HALF + 8, x1: COL_X[1] + HALF + 8, y1: ROW_Y[0] + HALF + 14, y2: ROW_Y[1] - HALF - 14 },
+  { kind: 'SIDEWALK', axis: 'V', fixed: COL_X[1] + HALF + 8, x1: COL_X[1] + HALF + 8, y1: ROW_Y[1] + HALF + 14, y2: H - 12 }
+];
+
+function isOnSidewalkCorridor(x, y, route) {
+  if (!route) return false;
+  if (route.axis === 'H') {
+    const minX = Math.min(route.x1, route.x2);
+    const maxX = Math.max(route.x1, route.x2);
+    return Math.abs(y - route.fixed) <= 6.5 && x >= minX - 2 && x <= maxX + 2;
+  }
+  const minY = Math.min(route.y1, route.y2);
+  const maxY = Math.max(route.y1, route.y2);
+  return Math.abs(x - route.fixed) <= 6.5 && y >= minY - 2 && y <= maxY + 2;
+}
+
+// Bangun rute trotoar penuh yang membentang rata sampai ujung jalan raya
+function buildFullRoadSidewalkRoutes() {
+  const routes = [];
+  const hExtStart = -360;
+  const hExtEnd = W + 360;
+  const vExtStart = -360;
+  const vExtEnd = H + 360;
+
+  ROW_Y.forEach(ry => {
+    [-1, 1].forEach(side => {
+      const fixedY = ry + side * (HALF + 8);
+      routes.push({ kind: 'SIDEWALK', axis: 'H', fixed: fixedY, x1: hExtStart, y1: fixedY, x2: hExtEnd, y2: fixedY });
+    });
+  });
+
+  COL_X.forEach(cx => {
+    [-1, 1].forEach(side => {
+      const fixedX = cx + side * (HALF + 8);
+      routes.push({ kind: 'SIDEWALK', axis: 'V', fixed: fixedX, x1: fixedX, y1: vExtStart, x2: fixedX, y2: vExtEnd });
+    });
+  });
+
+  return routes;
+}
+
+const FULL_ROAD_SIDEWALK_ROUTES = buildFullRoadSidewalkRoutes();
+
+function isNearZebraCross(x, y, s) {
+  const dx = Math.abs(x - s.cx);
+  const dy = Math.abs(y - s.cy);
+  const inHorizZebra = dx <= 75 && dy >= 83 && dy <= 99;
+  const inVertZebra = dy <= 75 && dx >= 83 && dx <= 99;
+  return inHorizZebra || inVertZebra;
+}
+
+function getTurningVehicleHazard(p, s) {
+  for (let i = 0; i < cars.length; i++) {
+    const car = cars[i];
+    if (car.crashed) continue;
+    const isTurning = car.path !== null || car.turnIntent !== 'STRAIGHT';
+    if (!isTurning) continue;
+
+    // Prediksi posisi kendaraan yang sedang belok atau berniat belok di dekat simpang
+    const predDist = Math.min(130, Math.max(30, car.v * 0.75));
+    const px = car.x + Math.cos(car.angle) * predDist;
+    const py = car.y + Math.sin(car.angle) * predDist;
+    const dNow = Math.hypot(car.x - p.x, car.y - p.y);
+    const dPred = Math.hypot(px - p.x, py - p.y);
+    const nearSimpang = Math.hypot(car.x - s.cx, car.y - s.cy) < STOP + 95;
+
+    if (nearSimpang && (dNow < 92 || dPred < 78)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function canPedestrianCross(s, lightDir, ped) {
+  if (lightDir < 0) return true;
+  if (!isNearZebraCross(ped.x, ped.y, s) && !isNearZebraCross(ped.tx, ped.ty, s)) return false;
+  if (getTurningVehicleHazard(ped, s)) return false;
+
+  const pState = cur(s.id);
+  if (pState.emg) return false;
+  const o = pState.out || OUTS_4PHASE[2];
+  // Pejalan kaki aman menyebrang bila arah kendaraan yang memotong jalur zebra sedang MERAH (atau All Red)
+  const dirOut = [
+    [o[0], o[1], o[2]], // 0: Utara
+    [o[6], o[7], o[8]], // 1: Selatan
+    [o[9], o[10], o[11]],// 2: Barat
+    [o[3], o[4], o[5]] // 3: Timur
+  ][lightDir];
+  const isRed = !!dirOut[0] && !dirOut[1] && !dirOut[2];
+  if (!isRed) return false;
+
+  // Pastikan tidak ada kendaraan yang sedang melaju tepat di titik zebra cross
+  const nearCar = cars.some(car => {
+    if (car.crashed) return false;
+    const onZebra = isNearZebraCross(car.x, car.y, s) ||
+      isNearZebraCross(car.x + Math.cos(car.angle) * 26, car.y + Math.sin(car.angle) * 26, s);
+    return (onZebra || Math.hypot(car.x - s.cx, car.y - s.cy) < STOP + 20) && car.v > 14;
+  });
+  return !nearCar;
+}
+
+function spawnPedestrian() {
+  if (pedestrians.length >= 88) return;
+  const useCorridorSidewalk = Math.random() < 0.72;
+  const s = INTS[Math.random() * INTS.length | 0];
+  const pool = useCorridorSidewalk ? FULL_ROAD_SIDEWALK_ROUTES : getIntersectionPedRoutes(s);
+  const r = pool[Math.random() * pool.length | 0];
+  const reverse = Math.random() < 0.5;
+  let sx = reverse ? r.x2 : r.x1;
+  let sy = reverse ? r.y2 : r.y1;
+  let ex = reverse ? r.x1 : r.x2;
+  let ey = reverse ? r.y1 : r.y2;
+
+  // Untuk rute trotoar jalan raya, spawn merata di sepanjang jalan raya atau persis di ujung jalan raya
+  if (r.kind === 'SIDEWALK' && Math.random() < 0.65) {
+    const tStart = Math.random();
+    sx = r.x1 + (r.x2 - r.x1) * tStart;
+    sy = r.y1 + (r.y2 - r.y1) * tStart;
+  }
+
+  if (pedestrians.some(p => Math.hypot(p.x - sx, p.y - sy) < 22)) return;
+
+  pedestrians.push({
+    intId: s.id,
+    kind: r.kind,
+    route: r,
+    lightDir: r.lightDir,
+    x: sx,
+    y: sy,
+    x1: r.x1,
+    y1: r.y1,
+    x2: r.x2,
+    y2: r.y2,
+    tx: ex,
+    ty: ey,
+    speed: r.kind === 'SIDEWALK' ? (22 + Math.random() * 10) : (28 + Math.random() * 10),
+    runTimer: 0,
+    runBoost: 1,
+    waitTimer: 0,
+    stride: Math.random() * Math.PI * 2,
+    state: r.kind === 'CROSS' ? 'WAITING' : 'WALKING',
+    shirt: PED_COLORS[Math.random() * PED_COLORS.length | 0],
+    pants: '#2b3545',
+    skin: '#f1c29b',
+    angle: Math.atan2(ey - sy, ex - sx)
+  });
+}
+
+function movePedestrians(dt) {
+  const dens = $('cfg-density').value;
+  const interval = dens === 'LOW' ? 1.2 : dens === 'HIGH' ? 0.28 : 0.58;
+  pedSpawnTimer -= dt;
+  if (pedSpawnTimer <= 0) {
+    spawnPedestrian();
+    pedSpawnTimer = interval * (0.7 + Math.random() * 0.6);
+  }
+
+  for (let i = pedestrians.length - 1; i >= 0; i--) {
+    const p = pedestrians[i];
+    if ((p.runTimer || 0) > 0) {
+      p.runTimer = Math.max(0, p.runTimer - dt);
+      if (p.runTimer === 0) p.runBoost = 1;
+    }
+
+    const s = INTS[p.intId] || INTS[0];
+    const dx = p.tx - p.x;
+    const dy = p.ty - p.y;
+    const dist = Math.hypot(dx, dy);
+
+    const outOfRoadEnd = p.x < -355 || p.x > W + 355 || p.y < -355 || p.y > H + 355;
+    if (dist < 4.5 || outOfRoadEnd) {
+      // Menghilang secara rata saat mencapai ujung jalan raya / rute
+      pedestrians.splice(i, 1);
+      continue;
+    }
+
+    p.angle = Math.atan2(dy, dx);
+    const isRunning = (p.runTimer || 0) > 0;
+
+    if (p.kind === 'CROSS' && p.state === 'WAITING') {
+      p.waitTimer = (p.waitTimer || 0) + dt;
+      if (isRunning || p.waitTimer > 2.2 || canPedestrianCross(s, p.lightDir, p)) {
+        p.state = 'CROSSING';
+        p.waitTimer = 0;
+      } else {
+        // Menunggu di tepi zebra cross bila lampu belum aman atau ada kendaraan yang ingin belok
+        continue;
+      }
+    } else if (p.kind === 'CROSS' && p.state === 'CROSSING') {
+      // Saat sedang menyebrang, tetap melangkah/berlari hingga selesai menyebrang agar tidak berhenti di tengah jalan
+      if (!isRunning && getTurningVehicleHazard(p, s) && dist > 118) {
+        continue;
+      }
+    }
+
+    const activeSpeed = p.speed * (isRunning ? (p.runBoost || 2.5) : 1);
+    const stepDist = Math.min(dist, activeSpeed * dt);
+    let nextX = p.x + (dx / dist) * stepDist;
+    let nextY = p.y + (dy / dist) * stepDist;
+
+    if (p.kind === 'SIDEWALK' && p.route) {
+      if (p.route.axis === 'H') nextY = p.route.fixed;
+      else nextX = p.route.fixed;
+      if (!isOnSidewalkCorridor(nextX, nextY, p.route)) {
+        pedestrians.splice(i, 1);
+        continue;
+      }
+    } else if (p.kind === 'CROSS') {
+      // Kunci posisi pejalan kaki agar selalu berada tepat di garis lintasan zebra cross
+      if (Math.abs((p.x1 ?? p.route.x1) - (p.x2 ?? p.route.x2)) < 2) nextX = p.x1 ?? p.route.x1;
+      if (Math.abs((p.y1 ?? p.route.y1) - (p.y2 ?? p.route.y2)) < 2) nextY = p.y1 ?? p.route.y1;
+    }
+
+    p.x = nextX;
+    p.y = nextY;
+    p.stride += dt * (activeSpeed * (isRunning ? 0.68 : 0.48));
+  }
+}
+
+function drawPedestrians2d() {
+  c.save();
+  c.translate(W / 2, H / 2);
+  c.scale(cam2d.zoom, cam2d.zoom);
+  c.translate(-cam2d.x, -cam2d.y);
+
+  pedestrians.forEach(p => {
+    const isRunning = (p.runTimer || 0) > 0;
+    const swing = p.state === 'WAITING' ? 0 : Math.sin(p.stride) * (isRunning ? 4.8 : 3.2);
+    c.save();
+    c.translate(p.x, p.y);
+    c.rotate(p.angle);
+
+    // Bayangan
+    c.fillStyle = 'rgba(0,0,0,.25)';
+    c.beginPath(); c.ellipse(0, 1, 5.5, 3.2, 0, 0, Math.PI * 2); c.fill();
+
+    // Ayunan kaki/lengan (top-down + sedikit offset langkah)
+    c.fillStyle = p.pants;
+    c.beginPath(); c.arc(swing * 0.65, -2.1, 2.1, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(-swing * 0.65, 2.1, 2.1, 0, Math.PI * 2); c.fill();
+
+    // Bahu / baju
+    c.fillStyle = p.shirt;
+    c.beginPath(); c.ellipse(0, 0, 3.6, 5.4, 0, 0, Math.PI * 2); c.fill();
+
+    // Kepala
+    c.fillStyle = p.skin;
+    c.beginPath(); c.arc(0.8, 0, 2.7, 0, Math.PI * 2); c.fill();
+
+    if (isRunning) {
+      c.strokeStyle = 'rgba(255, 224, 72, 0.85)';
+      c.lineWidth = 1.5;
+      c.beginPath(); c.arc(0, 0, 7.5, -0.8, 0.8); c.stroke();
+    }
+
+    c.restore();
+  });
+
+  c.restore();
+}
+
+function drawTrafficLights2d() {
+  c.save();
+  c.translate(W / 2, H / 2);
+  c.scale(cam2d.zoom, cam2d.zoom);
+  c.translate(-cam2d.x, -cam2d.y);
+
+  const palettes = [
+    ['#ff4b45', '#ffc83a', '#4ee07a'],
+    ['#ff4b45', '#ffc83a', '#4ee07a'],
+    ['#ff4b45', '#ffc83a', '#4ee07a'],
+    ['#ff4b45', '#ffc83a', '#4ee07a']
+  ];
+  const offCols = ['#333942', '#333942', '#333942'];
+
+  INTS.forEach(s => {
+    const pState = cur(s.id);
+    const o = pState.out || OUTS_4PHASE[2];
+    const isSel = s.id === selectedInt;
+
+    // Lencana label persimpangan (S1–S4)
+    const bx = s.cx - HALF - 34;
+    const by = s.cy - HALF - 26;
+    c.fillStyle = isSel ? '#1d4ed8' : '#14202b';
+    c.strokeStyle = '#93c5fd';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.roundRect(bx - 22, by - 11, 44, 22, 5);
+    c.fill();
+    c.stroke();
+    c.fillStyle = '#ffffff';
+    c.font = 'bold 11px "Segoe UI", sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(isSel ? `${s.short}*` : s.short, bx, by);
+
+    // 4 kepala lampu arah Utara (0..2), Timur (3..5), Selatan (6..8), Barat (9..11)
+    const heads = [
+      { x: s.cx - 98, y: s.cy - 122, idx: 0, horiz: true },
+      { x: s.cx + 122, y: s.cy - 98, idx: 3, horiz: false },
+      { x: s.cx + 98, y: s.cy + 122, idx: 6, horiz: true },
+      { x: s.cx - 122, y: s.cy + 98, idx: 9, horiz: false }
+    ];
+
+    heads.forEach((h, hIdx) => {
+      c.save();
+      c.translate(h.x, h.y);
+      if (!h.horiz) c.rotate(Math.PI / 2);
+
+      c.fillStyle = '#181d24';
+      c.strokeStyle = '#38424f';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.roundRect(-24, -9, 48, 18, 4);
+      c.fill();
+      c.stroke();
+
+      [-14, 0, 14].forEach((lx, k) => {
+        const active = !!o[h.idx + k];
+        const col = active ? palettes[hIdx][k] : offCols[k];
+        c.fillStyle = col;
+        if (active) {
+          c.shadowColor = col;
+          c.shadowBlur = 8;
+        }
+        c.beginPath();
+        c.arc(lx, 0, 5, 0, Math.PI * 2);
+        c.fill();
+        c.shadowBlur = 0;
+      });
+
+      c.restore();
+    });
+  });
+
+  c.restore();
+}
+
+/* ===== MODE 3D GRID 2x2 JARAK JAUH (THREE.JS) ===== */
+function loadThree() {
+  return new Promise((ok, no) => {
+    if (window.THREE) return ok();
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = ok; s.onerror = no; document.head.appendChild(s);
+  });
+}
+
+function showView(on) {
+  $('cv').style.display = on ? 'none' : 'block';
+  $('c3').style.display = on ? 'block' : 'none';
+  $('hint3').style.display = on ? 'block' : 'none';
+  $('v2').classList.toggle('on', !on);
+  $('v3').classList.toggle('on', on);
+}
+
+function setView(on) {
+  if (!on) { view3d = false; showView(false); return; }
+  loadThree().then(() => {
+    T3 = T3 || init3D();
+    view3d = true;
+    showView(true);
+  }).catch(() => {
+    view3d = false;
+    showView(false);
+    $('v3').textContent = '3D gagal dimuat';
+  });
+}
+
+$('v2').onclick = () => setView(false);
+$('v3').onclick = () => setView(true);
+$('bPov').onclick = () => {
+  if (!povRoadMode && !view3d) {
+    setView(true);
+  }
+  toggleRoadPov();
+};
+$('bSwitchPov').onclick = () => {
+  cyclePovTarget();
+};
+
+function init3D() {
+  const box = $('c3');
+  const sc = new THREE.Scene();
+  sc.background = new THREE.Color('#bcd9f2');
+
+  const cam = new THREE.PerspectiveCamera(48, Math.max(1, box.clientWidth) / Math.max(1, box.clientHeight), 1, 14000);
+  const R = new THREE.WebGLRenderer({ antialias: true });
+  R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  R.setSize(Math.max(1, box.clientWidth), Math.max(1, box.clientHeight), false);
+  R.shadowMap.enabled = true;
+  R.shadowMap.type = THREE.PCFSoftShadowMap;
+  box.innerHTML = '';
+  box.appendChild(R.domElement);
+
+  const amb = new THREE.AmbientLight('#eef5ff', 0.78);
+  sc.add(amb);
+
+  const dirLight = new THREE.DirectionalLight('#fff8eb', 0.95);
+  dirLight.position.set(650, 1200, 750);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
+  const dCam = 2200;
+  dirLight.shadow.camera.left = -dCam;
+  dirLight.shadow.camera.right = dCam;
+  dirLight.shadow.camera.top = dCam;
+  dirLight.shadow.camera.bottom = -dCam;
+  dirLight.shadow.camera.near = 100;
+  dirLight.shadow.camera.far = 4200;
+  sc.add(dirLight);
+
+  const bx = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+  const M = col => new THREE.MeshStandardMaterial({ color: col, roughness: 0.65, metalness: 0.1 });
+  const add = (geo, mat, x, y, z, parent = sc, cast = true, recv = true) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.castShadow = cast;
+    m.receiveShadow = recv;
+    parent.add(m);
+    return m;
+  };
+
+  // Konversi koordinat kanvas 2D (x, y) -> Three.js (x - W/2, z = y - H/2)
+  const rect = (x, y, w, h, col) => add(bx(w, 0.5, h), M(col), x + w / 2 - W / 2, 1.25, y + h / 2 - H / 2, sc, false, true);
+
+  // Tanah rumput hijau berlapis & trotoar tinggi (y = 3.2)
+  add(bx(5200, 2, 4400), M('#68aa55'), 0, -1.0, 0, sc, false, true);
+  add(bx(W - 30, 0.6, H - 30), M('#79ba63'), 0, 0.1, 0, sc, false, true);
+
+  const swMat = M('#cfd6c4');
+  ROW_Y.forEach(ry => {
+    add(bx(4300, 3.2, 16), swMat, 0, 1.6, ry - HALF - 8 - H / 2, sc, false, true);
+    add(bx(4300, 3.2, 16), swMat, 0, 1.6, ry + HALF + 8 - H / 2, sc, false, true);
+    add(bx(4200, 1.2, 2 * HALF), M('#353a42'), 0, 0.5, ry - H / 2, sc, false, true);
+  });
+  COL_X.forEach(cx => {
+    add(bx(16, 3.2, 3500), swMat, cx - HALF - 8 - W / 2, 1.6, 0, sc, false, true);
+    add(bx(16, 3.2, 3500), swMat, cx + HALF + 8 - W / 2, 1.6, 0, sc, false, true);
+    add(bx(2 * HALF, 1.2, 3400), M('#353a42'), cx - W / 2, 0.5, 0, sc, false, true);
+  });
+
+  const roadMarkMat = new THREE.MeshBasicMaterial({ color: '#f3f5f8' });
+  const yellowMarkMat = new THREE.MeshBasicMaterial({ color: '#e0c84f' });
+  const addRoadPlate = (w, d, x2d, y2d, mat = roadMarkMat, rotY = 0) => {
+    const m = add(bx(w, 0.35, d), mat, x2d - W / 2, 1.28, y2d - H / 2, sc, false, true);
+    m.rotation.y = rotY;
+    return m;
+  };
+
+  const line = (x1, y1, x2, y2, w, col, dash) => {
+    const mat = col === '#e0c84f' ? yellowMarkMat : roadMarkMat;
+    const vert = x1 === x2;
+    const len = vert ? Math.abs(y2 - y1) : Math.abs(x2 - x1);
+    const step = dash ? dash * 2 : len;
+    for (let o = 0; o < len; o += step) {
+      const segLen = dash ? Math.min(dash, len - o) : len;
+      if (vert) {
+        const sy = y1 < y2 ? y1 + o + segLen / 2 : y1 - o - segLen / 2;
+        addRoadPlate(w, segLen, x1, sy, mat);
+      } else {
+        const sx = x1 < x2 ? x1 + o + segLen / 2 : x1 - o - segLen / 2;
+        addRoadPlate(segLen, w, sx, y1, mat);
+      }
+    }
+  };
+
+  ROW_Y.forEach(ry => {
+    line(-300, ry, COL_X[0] - STOP, ry, 3, '#e0c84f', 0);
+    line(COL_X[0] + STOP, ry, COL_X[1] - STOP, ry, 3, '#e0c84f', 0);
+    line(COL_X[1] + STOP, ry, W + 300, ry, 3, '#e0c84f', 0);
+    [ry - 40, ry + 40].forEach(ly => {
+      line(-300, ly, COL_X[0] - STOP, ly, 2, '#f2f2f2', 16);
+      line(COL_X[0] + STOP, ly, COL_X[1] - STOP, ly, 2, '#f2f2f2', 16);
+      line(COL_X[1] + STOP, ly, W + 300, ly, 2, '#f2f2f2', 16);
+    });
+  });
+
+  COL_X.forEach(cx => {
+    line(cx, -300, cx, ROW_Y[0] - STOP, 3, '#e0c84f', 0);
+    line(cx, ROW_Y[0] + STOP, cx, ROW_Y[1] - STOP, 3, '#e0c84f', 0);
+    line(cx, ROW_Y[1] + STOP, cx, H + 300, 3, '#e0c84f', 0);
+    [cx - 40, cx + 40].forEach(lx => {
+      line(lx, -300, lx, ROW_Y[0] - STOP, 2, '#f2f2f2', 16);
+      line(lx, ROW_Y[0] + STOP, lx, ROW_Y[1] - STOP, 2, '#f2f2f2', 16);
+      line(lx, ROW_Y[1] + STOP, lx, H + 300, 2, '#f2f2f2', 16);
+    });
+  });
+
+  // Marka panah 3D menyerupai panah arah pada mode 2D
+  const addRoadArrow3D = (x2d, y2d, ang2d, type) => {
+    const gr = new THREE.Group();
+    gr.position.set(x2d - W / 2, 1.32, y2d - H / 2);
+    // Sudut rotasi Y menyesuaikan arah hadap panah di permukaan XZ (y2d -> +Z)
+    gr.rotation.y = -ang2d;
+
+    const addPart = (w, d, lx, lz) => {
+      const m = new THREE.Mesh(bx(w, 0.35, d), roadMarkMat);
+      m.position.set(lx, 0, lz);
+      m.receiveShadow = true;
+      gr.add(m);
+    };
+    const addHead = (lx, lz, yawLocal) => {
+      const hg = new THREE.Group();
+      hg.position.set(lx, 0, lz);
+      hg.rotation.y = yawLocal;
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(5.5, 11, 4), roadMarkMat);
+      tip.rotation.x = -Math.PI / 2;
+      tip.rotation.z = Math.PI / 4;
+      hg.add(tip);
+      gr.add(hg);
+    };
+
+    if (type === 'R') {
+      addPart(2.8, 18, 0, 8);
+      addPart(10, 2.8, 5, -2);
+      addHead(11, -2, -Math.PI / 2);
+    } else {
+      // Lajur lurus + belok kiri (sesuai mode 2D)
+      addPart(2.8, 30, 0, 2);
+      addHead(0, -14, 0);
+      addPart(10, 2.8, -5, 4);
+      addHead(-11, 4, Math.PI / 2);
+    }
+    sc.add(gr);
+  };
+
+  INTS.forEach(s => {
+    for (let i = 0; i < 9; i++) {
+      const o = -68 + i * 15.2;
+      addRoadPlate(7.5, 14, s.cx + o + 3.75, s.cy - 91, roadMarkMat);
+      addRoadPlate(7.5, 14, s.cx + o + 3.75, s.cy + 91, roadMarkMat);
+      addRoadPlate(14, 7.5, s.cx - 91, s.cy + o + 3.75, roadMarkMat);
+      addRoadPlate(14, 7.5, s.cx + 91, s.cy + o + 3.75, roadMarkMat);
+    }
+    addRoadPlate(HALF, 4, s.cx - HALF / 2, s.cy - STOP - 2, roadMarkMat);
+    addRoadPlate(HALF, 4, s.cx + HALF / 2, s.cy + STOP + 2, roadMarkMat);
+    addRoadPlate(4, HALF, s.cx - STOP - 2, s.cy + HALF / 2, roadMarkMat);
+    addRoadPlate(4, HALF, s.cx + STOP + 2, s.cy - HALF / 2, roadMarkMat);
+
+    [0, 1].forEach(k => {
+      addRoadArrow3D(laneC(0, k, s.id), s.cy - 155, Math.PI, k ? 'R' : 'SL');
+      addRoadArrow3D(laneC(1, k, s.id), s.cy + 155, 0, k ? 'R' : 'SL');
+      addRoadArrow3D(s.cx - 155, laneC(2, k, s.id), Math.PI / 2, k ? 'R' : 'SL');
+      addRoadArrow3D(s.cx + 155, laneC(3, k, s.id), -Math.PI / 2, k ? 'R' : 'SL');
+    });
+  });
+
+  // Tekstur jendela rumah & gedung
+  const tc = document.createElement('canvas');
+  tc.width = tc.height = 64;
+  const g = tc.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, 64, 64);
+  g.fillStyle = '#394659';
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    g.fillRect(7 + i * 32, 9 + j * 30, 17, 14);
+    g.fillStyle = '#9ac5e8';
+    g.fillRect(9 + i * 32, 11 + j * 30, 7, 5);
+    g.fillStyle = '#394659';
+  }
+  const tex = new THREE.CanvasTexture(tc);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+
+  const roofColors = ['#8c3b2b', '#3b526b', '#4d6449', '#6e473b'];
+  B.forEach(([x, y, w, h, col], i) => {
+    const isHouse = w < 155 && h < 145;
+    const ht = isHouse ? (26 + (i * 11) % 22) : (58 + (i * 47) % 120);
+    const t = tex.clone();
+    t.needsUpdate = true;
+    t.repeat.set(Math.max(1, Math.round(w / 34)), Math.max(1, Math.round(ht / 26)));
+    const side = new THREE.MeshStandardMaterial({ color: col, map: t, roughness: 0.75 });
+    const roof = M(roofColors[i % roofColors.length]);
+    const cx3 = x + w / 2 - W / 2;
+    const cz3 = y + h / 2 - H / 2;
+    add(bx(w, ht, h), [side, side, M(col), M(col), side, side], cx3, ht / 2 + 2.5, cz3);
+    // Atap miring / lis atap rumah & bangunan
+    add(bx(w + 6, isHouse ? 8 : 5, h + 6), roof, cx3, ht + (isHouse ? 6 : 4.5), cz3);
+    if (isHouse) {
+      add(bx(Math.max(14, w * 0.55), 7, Math.max(14, h * 0.55)), roof, cx3, ht + 12, cz3);
+    }
+  });
+
+  // Pohon 3D berlapis batang & 2 tingkat kanopi daun
+  const trunkMat = M('#6b4a2b');
+  const leafDark = M('#3f7d44');
+  const leafLight = M('#5da656');
+  TREES.forEach(([x, y], idx) => {
+    // Hindari menabrak area kompleks Gedung DPR dan tamannya
+    if (x >= DPR_TOP_PARK.x - 16 && x <= DPR_TOP_PARK.x + DPR_TOP_PARK.w + 16 &&
+        y >= DPR_TOP_PARK.y - 16 && y <= DPR_TOP_PARK.y + DPR_TOP_PARK.h + 16) {
+      return;
+    }
+    const tx = x - W / 2, tz = y - H / 2;
+    const scF = 0.85 + (idx % 4) * 0.12;
+    add(new THREE.CylinderGeometry(2.4 * scF, 3.3 * scF, 15 * scF, 8), trunkMat, tx, 7.5 * scF + 2.5, tz);
+    add(new THREE.DodecahedronGeometry(11.5 * scF, 1), leafDark, tx, 22 * scF + 2.5, tz);
+    add(new THREE.DodecahedronGeometry(8.2 * scF, 1), leafLight, tx - 3 * scF, 28 * scF + 2.5, tz + 2 * scF);
+  });
+
+  // Kompleks Gedung DPR 3D beserta tamannya di area lingkaran merah
+  {
+    const dprGroup = new THREE.Group();
+    const dprCx3 = (DPR_TOP_PARK.x + DPR_TOP_PARK.w / 2) - W / 2;
+    const dprCz3 = (DPR_TOP_PARK.y + DPR_TOP_PARK.h / 2) - H / 2;
+    dprGroup.position.set(dprCx3, 2.5, dprCz3);
+
+    const parkTurfMat = M('#59a14b');
+    const pathMat = M('#dce4d3');
+    const whiteWingMat = new THREE.MeshStandardMaterial({ color: '#f3f6f9', roughness: 0.48, metalness: 0.05 });
+    const darkGlassMat = new THREE.MeshStandardMaterial({ color: '#1b2430', roughness: 0.15, metalness: 0.75 });
+    const domeGreenMat = new THREE.MeshStandardMaterial({ color: '#478c79', roughness: 0.45, metalness: 0.18 });
+    const ribDarkMat = new THREE.MeshStandardMaterial({ color: '#323a42', roughness: 0.5, metalness: 0.35 });
+    const stairDarkMat = new THREE.MeshStandardMaterial({ color: '#475569', roughness: 0.65 });
+    const stairLightMat = new THREE.MeshStandardMaterial({ color: '#e5ebf0', roughness: 0.6 });
+    const poleWhiteMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.3, metalness: 0.5 });
+
+    // Area taman hijau luas & jalur setapak di sekeliling Gedung Nusantara
+    add(bx(DPR_TOP_PARK.w, 2.2, DPR_TOP_PARK.h), parkTurfMat, 0, 1.1, 0, dprGroup);
+    add(bx(DPR_TOP_PARK.w - 28, 2.5, DPR_TOP_PARK.h - 28), pathMat, 0, 1.3, 0, dprGroup);
+    add(bx(DPR_TOP_PARK.w - 44, 2.7, DPR_TOP_PARK.h - 44), parkTurfMat, 0, 1.45, 0, dprGroup);
+
+    // Pohon-pohon taman & palem di sisi kiri dan kanan Gedung Nusantara
+    [-195, -145, 145, 195].forEach((px, tIdx) => {
+      [-45, 35].forEach((pz, zIdx) => {
+        const scT = 0.95 + ((tIdx + zIdx) % 3) * 0.14;
+        add(new THREE.CylinderGeometry(2.2 * scT, 3.2 * scT, 18 * scT, 8), trunkMat, px, 9 * scT + 2, pz, dprGroup);
+        add(new THREE.DodecahedronGeometry(11.5 * scT, 1), leafDark, px, 24 * scT + 2, pz, dprGroup);
+        add(new THREE.DodecahedronGeometry(8.2 * scT, 1), leafLight, px - 2.5 * scT, 30 * scT + 2, pz + 2 * scT, dprGroup);
+      });
+    });
+
+    const wingW = DPR_ZONE.w + 18;
+    const wingH = DPR_ZONE.h - 24;
+    const frontZ = wingH / 2;
+
+    // Sayap bangunan putih & dinding kaca gelap vertikal
+    add(bx(wingW, 30, wingH), whiteWingMat, 0, 17.5, 0, dprGroup);
+    add(bx(wingW - 14, 22, wingH + 1.2), darkGlassMat, 0, 15.5, 0, dprGroup);
+    add(bx(wingW + 6, 4.5, wingH + 6), whiteWingMat, 0, 33.5, 0, dprGroup);
+
+    // Pilar / mullion kaca vertikal pada sisi depan & belakang
+    for (let mx = -wingW / 2 + 12; mx <= wingW / 2 - 12; mx += 14) {
+      add(bx(1.2, 22, 1.4), whiteWingMat, mx, 15.5, frontZ + 0.7, dprGroup, false, true);
+      add(bx(1.2, 22, 1.4), whiteWingMat, mx, 15.5, -frontZ - 0.7, dprGroup, false, true);
+    }
+
+    // Tangga utama lebar di bagian depan (lajur tengah terang diapit sisi abu-abu gelap & parapet putih)
+    const stairW = 86;
+    const stairRun = 34;
+    const stepsCount = 12;
+    for (let sIdx = 0; sIdx < stepsCount; sIdx++) {
+      const frac = sIdx / stepsCount;
+      const sy = 31 * (1 - frac) + 1.5;
+      const sz = frontZ + frac * stairRun;
+      const stepH = 3.2;
+      add(bx(stairW, stepH, 4.2), stairDarkMat, 0, sy, sz, dprGroup);
+      add(bx(28, stepH + 0.2, 4.3), stairLightMat, 0, sy + 0.1, sz, dprGroup);
+    }
+    // Dinding pembatas (cheek wall) putih di sisi kiri & kanan tangga
+    [-stairW / 2 - 2.5, stairW / 2 + 2.5].forEach(cxWall => {
+      const wall = add(bx(4.5, 4.2, stairRun + 8), whiteWingMat, cxWall, 18, frontZ + stairRun / 2 - 1, dprGroup);
+      wall.rotation.x = 0.72;
+    });
+
+    // Kubah hijau kebiruan melengkung ganda + rusuk pelengkung gelap di tengah
+    const domeGeo = new THREE.SphereGeometry(56, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.56);
+    [-46, 46].forEach(ox => {
+      const dome = new THREE.Mesh(domeGeo, domeGreenMat);
+      dome.scale.set(1.15, 0.78, 1.05);
+      dome.position.set(ox, 33, -4);
+      dome.castShadow = true;
+      dome.receiveShadow = true;
+      dprGroup.add(dome);
+    });
+    // Pelengkung/rusuk penyatu kubah di bagian tengah depan & belakang
+    [-1, 1].forEach(zSign => {
+      const rib = new THREE.Mesh(new THREE.TorusGeometry(42, 3.6, 12, 28, Math.PI * 0.78), ribDarkMat);
+      rib.position.set(0, 32, zSign * 18);
+      rib.rotation.z = Math.PI * 0.11;
+      rib.scale.set(0.62, 0.92, 1);
+      rib.castShadow = true;
+      dprGroup.add(rib);
+    });
+
+    // Dua tiang bendera Merah Putih di sisi kanan depan Gedung Nusantara
+    [118, 134].forEach((fx, idx) => {
+      const fz = frontZ + 22 - idx * 4;
+      const poleH = idx === 0 ? 58 : 50;
+      add(new THREE.CylinderGeometry(0.65, 0.8, poleH, 8), poleWhiteMat, fx, poleH / 2 + 2, fz, dprGroup);
+      if (idx === 0) {
+        add(bx(16, 5, 1.2), new THREE.MeshBasicMaterial({ color: '#dc2626' }), fx + 8.5, poleH - 1.5, fz, dprGroup, false, false);
+        add(bx(16, 5, 1.2), new THREE.MeshBasicMaterial({ color: '#ffffff' }), fx + 8.5, poleH - 6.5, fz, dprGroup, false, false);
+      }
+    });
+
+    // Papan nama "GEDUNG NUSANTARA" di fasad putih kiri
+    const nusantaraSignMat = new THREE.MeshBasicMaterial({
+      map: makeSignTexture(['GEDUNG NUSANTARA'], '#f8fafc', '#1e293b', null, 340, 56)
+    });
+    const nusantaraSign = new THREE.Mesh(bx(86, 11, 2.2), nusantaraSignMat);
+    nusantaraSign.position.set(-wingW / 2 + 54, 29.5, frontZ + 0.8);
+    dprGroup.add(nusantaraSign);
+
+    sc.add(dprGroup);
+  }
+
+  // Tiang & lampu lalu lintas untuk setiap persimpangan
+  const lamps = [];
+  const intBadges = [];
+  const signPostMat = M('#262c36');
+  const badgeBaseMat = M('#16202c');
+  const poleGalvMat = new THREE.MeshStandardMaterial({ color: '#cfd6de', roughness: 0.35, metalness: 0.72 });
+  const housingMat = new THREE.MeshStandardMaterial({ color: '#1b2028', roughness: 0.55, metalness: 0.25 });
+  const visorMat = new THREE.MeshStandardMaterial({ color: '#11151b', roughness: 0.6, metalness: 0.2 });
+  const cableMat = new THREE.MeshBasicMaterial({ color: '#475569' });
+
+  function makeSignTexture(lines = [], bgCol = '#0b6b3a', fgCol = '#ffffff', borderCol = '#ffffff', width = 256, height = 128) {
+    const scv = document.createElement('canvas');
+    scv.width = width;
+    scv.height = height;
+    const sg = scv.getContext('2d');
+    sg.fillStyle = bgCol;
+    sg.fillRect(0, 0, width, height);
+    if (borderCol) {
+      sg.strokeStyle = borderCol;
+      sg.lineWidth = Math.max(4, Math.round(Math.min(width, height) * 0.06));
+      sg.strokeRect(4, 4, width - 8, height - 8);
+    }
+    sg.fillStyle = fgCol;
+    sg.textAlign = 'center';
+    sg.textBaseline = 'middle';
+    const count = Math.max(1, lines.length);
+    const fontSize = Math.max(14, Math.round((height * 0.62) / count));
+    sg.font = `bold ${fontSize}px "Segoe UI", sans-serif`;
+    lines.forEach((txt, idx) => {
+      const yPos = ((idx + 0.5) / count) * height;
+      sg.fillText(txt, width / 2, yPos);
+    });
+    const tex3 = new THREE.CanvasTexture(scv);
+    tex3.needsUpdate = true;
+    return tex3;
+  }
+
+  const rightTurnTex = makeSignTexture(['BELOK KANAN', 'TERUS'], '#0b6b3a', '#ffffff', '#ffffff', 256, 128);
+  const rightTurnMat = new THREE.MeshBasicMaterial({ map: rightTurnTex });
+
+  INTS.forEach(s => {
+    const bx3 = s.cx - HALF - 32 - W / 2;
+    const bz3 = s.cy - HALF - 32 - H / 2;
+    add(new THREE.CylinderGeometry(2.0, 2.4, 48, 8), signPostMat, bx3, 25, bz3);
+    add(bx(46, 18, 6), badgeBaseMat, bx3, 52, bz3);
+    const badgeMat = new THREE.MeshBasicMaterial({
+      map: makeSignTexture([s.short], '#14202b', '#ffffff', '#93c5fd', 192, 68)
+    });
+    const badgeMesh = add(bx(40, 12, 7.2), badgeMat, bx3, 52, bz3);
+    intBadges.push({ id: s.id, mesh: badgeMesh, badgeMat, lastSel: null });
+
+    // Arah datang kendaraan pada tiap pendekatan (approachYaw):
+    // Utara (pendekatan dari atas, kendaraan melaju ke +Z): menghadap ke -Z (rotY = Math.PI)
+    // Selatan (pendekatan dari bawah, kendaraan melaju ke -Z): menghadap ke +Z (rotY = 0)
+    // Barat (pendekatan dari kiri, kendaraan melaju ke +X): menghadap ke -X (rotY = -Math.PI / 2)
+    // Timur (pendekatan dari kanan, kendaraan melaju ke -X): menghadap ke +X (rotY = Math.PI / 2)
+    [
+      { x: s.cx - 102, y: s.cy - 134, i: 0, fx: 0,  fz: -1, approachYaw: Math.PI,      roadX: s.cx - 40 - W / 2, roadZ: s.cy - STOP - H / 2 },
+      { x: s.cx + 102, y: s.cy + 134, i: 6, fx: 0,  fz: 1,  approachYaw: 0,            roadX: s.cx + 40 - W / 2, roadZ: s.cy + STOP - H / 2 },
+      { x: s.cx - 134, y: s.cy + 102, i: 9, fx: -1, fz: 0,  approachYaw: -Math.PI / 2, roadX: s.cx - STOP - W / 2, roadZ: s.cy - 40 - H / 2 },
+      { x: s.cx + 134, y: s.cy - 102, i: 3, fx: 1,  fz: 0,  approachYaw: Math.PI / 2,  roadX: s.cx + STOP - W / 2, roadZ: s.cy + 40 - H / 2 }
+    ].forEach(l => {
+      const X = l.x - W / 2, Z = l.y - H / 2;
+      const poleH = 82;
+      const armY = 58;
+      const hangX = l.roadX;
+      const hangZ = l.roadZ;
+      const dxArm = hangX - X;
+      const dzArm = hangZ - Z;
+      const armLen = Math.hypot(dxArm, dzArm);
+
+      // Tiang penyangga utama galvanis masing-masing pendekatan
+      add(new THREE.CylinderGeometry(2.0, 2.5, poleH, 10), poleGalvMat, X, poleH / 2 + 2.5, Z);
+      // Lengan mendatar yang menjulur ke lajur jalan masing-masing pendekatan
+      const armMesh = add(bx(armLen, 2.6, 2.6), poleGalvMat, (X + hangX) / 2, armY, (Z + hangZ) / 2);
+      armMesh.rotation.y = -Math.atan2(dzArm, dxArm);
+
+      // Kabel penyokong diagonal dari titik atas tiang utama ke ujung lengan lampu atas
+      const pTop = new THREE.Vector3(X, poleH - 5, Z);
+      const pArmTip = new THREE.Vector3(hangX, armY, hangZ);
+      const cableVec = new THREE.Vector3().subVectors(pArmTip, pTop);
+      const cableLen = cableVec.length();
+      const cableMid = new THREE.Vector3().addVectors(pTop, pArmTip).multiplyScalar(0.5);
+      const cableMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, cableLen, 6), cableMat);
+      cableMesh.position.copy(cableMid);
+      cableMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), cableVec.clone().normalize());
+      sc.add(cableMesh);
+
+      // Kepala lampu horizontal teratas masing-masing pendekatan di depan kendaraan
+      const topLampHead = new THREE.Group();
+      topLampHead.position.set(hangX, armY, hangZ);
+      topLampHead.rotation.y = l.approachYaw;
+      add(bx(28, 10.5, 10.5), housingMat, 0, 0, 0, topLampHead);
+      [-9.5, 0, 9.5].forEach(lx => {
+        const hood = new THREE.Mesh(new THREE.CylinderGeometry(3.9, 4.1, 5.2, 12, 1, true, -Math.PI * 0.5, Math.PI), visorMat);
+        hood.rotation.x = Math.PI / 2;
+        hood.position.set(lx, 0.3, 6.2);
+        topLampHead.add(hood);
+      });
+      sc.add(topLampHead);
+
+      // Kepala lampu vertikal terpasang pada tiang bawah masing-masing pendekatan
+      const lowLampHead = new THREE.Group();
+      lowLampHead.position.set(X, 34, Z);
+      lowLampHead.rotation.y = l.approachYaw;
+      add(bx(10.5, 28, 10.5), housingMat, 0, 0, 0, lowLampHead);
+      [-9.5, 0, 9.5].forEach(ly => {
+        const hood = new THREE.Mesh(new THREE.CylinderGeometry(3.9, 4.1, 5.2, 12, 1, true, -Math.PI * 0.5, Math.PI), visorMat);
+        hood.rotation.x = Math.PI / 2;
+        hood.position.set(0, ly + 0.3, 6.2);
+        lowLampHead.add(hood);
+      });
+
+      // Lampu panah hijau di bawah (menempel pada lampu bawah dan mengarah ke kanan / arah sebaliknya)
+      const lowerArrowOffsetY = -18.5;
+      add(bx(10.5, 10.5, 10.5), housingMat, 0, lowerArrowOffsetY, 0, lowLampHead);
+      const arrowHood = new THREE.Mesh(new THREE.CylinderGeometry(3.9, 4.1, 5.2, 12, 1, true, -Math.PI * 0.5, Math.PI), visorMat);
+      arrowHood.rotation.x = Math.PI / 2;
+      arrowHood.position.set(0, lowerArrowOffsetY + 0.3, 6.2);
+      lowLampHead.add(arrowHood);
+
+      const lowerArrowBulb = new THREE.Mesh(
+        new THREE.CircleGeometry(3.2, 16),
+        new THREE.MeshBasicMaterial({ color: '#4ee07a' })
+      );
+      lowerArrowBulb.position.set(0, lowerArrowOffsetY, 5.55);
+      lowLampHead.add(lowerArrowBulb);
+
+      // Bentuk panah hijau mengarah ke kanan (lokal +X, berlawanan dengan arah kiri sebelumnya)
+      const arrowMat = new THREE.MeshBasicMaterial({ color: '#0f2918' });
+      const shaftMesh = new THREE.Mesh(bx(3.2, 1.15, 0.4), arrowMat);
+      shaftMesh.position.set(-0.35, lowerArrowOffsetY, 5.68);
+      lowLampHead.add(shaftMesh);
+
+      const tipShape = new THREE.Shape();
+      tipShape.moveTo(2.1, 0);
+      tipShape.lineTo(-0.2, 1.85);
+      tipShape.lineTo(-0.2, -1.85);
+      tipShape.closePath();
+      const tipMesh = new THREE.Mesh(new THREE.ShapeGeometry(tipShape), arrowMat);
+      tipMesh.position.set(0.5, lowerArrowOffsetY, 5.68);
+      lowLampHead.add(tipMesh);
+
+      sc.add(lowLampHead);
+
+      // Lensa lampu merah, kuning, dan hijau pada kepala lampu atas & bawah
+      const topBulbs = [0, 1, 2].map(k => {
+        const m = new THREE.Mesh(
+          new THREE.CircleGeometry(3.2, 16),
+          new THREE.MeshBasicMaterial({ color: '#333' })
+        );
+        m.position.set(-9.5 + k * 9.5, 0, 5.5);
+        topLampHead.add(m);
+        return m;
+      });
+
+      const lowBulbs = [0, 1, 2].map(k => {
+        const m = new THREE.Mesh(
+          new THREE.CircleGeometry(3.2, 16),
+          new THREE.MeshBasicMaterial({ color: '#333' })
+        );
+        m.position.set(0, 9.5 - k * 9.5, 5.5);
+        lowLampHead.add(m);
+        return m;
+      });
+
+      lamps.push({
+        intId: s.id,
+        i: l.i,
+        arrowBulb: lowerArrowBulb,
+        ls: topBulbs.map((tb, k) => ({ top: tb, low: lowBulbs[k] }))
+      });
+    });
+  });
+
+  const veh = new Map();
+  const pedMeshes = new Map();
+  const mkPed = p => {
+    const gr = new THREE.Group();
+    const legGeo = bx(2.2, 7.2, 2.2), legMat = M(p.pants);
+    const armGeo = bx(2.0, 6.2, 2.0), armMat = M(p.shirt);
+    const legL = add(legGeo, legMat, 0, 3.6, -1.8, gr);
+    const legR = add(legGeo, legMat, 0, 3.6, 1.8, gr);
+    add(bx(3.8, 7.6, 8.2), M(p.shirt), 0, 10.6, 0, gr);
+    const armL = add(armGeo, armMat, 0, 10.8, -5.2, gr);
+    const armR = add(armGeo, armMat, 0, 10.8, 5.2, gr);
+    add(new THREE.SphereGeometry(2.6, 12, 10), M(p.skin), 0.4, 16.6, 0, gr);
+    gr.userData = { legL, legR, armL, armR };
+    sc.add(gr);
+    pedMeshes.set(p, gr);
+    return gr;
+  };
+
+  const mk = a => {
+    const t = VT[a.type], L = t.L, w = t.w, gr = new THREE.Group();
+    const bm = new THREE.MeshStandardMaterial({
+      color: a.crashed ? '#333' : a.col,
+      roughness: 0.34,
+      metalness: 0.38
+    });
+    const trimMat = new THREE.MeshStandardMaterial({ color: '#1b2028', roughness: 0.6, metalness: 0.25 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.25, metalness: 0.85 });
+    const gm = new THREE.MeshStandardMaterial({ color: '#1b2836', roughness: 0.14, metalness: 0.82 });
+    const headLightMat = new THREE.MeshBasicMaterial({ color: '#fff7cc' });
+    const brakeMat = new THREE.MeshBasicMaterial({ color: '#591111' });
+    const blinkMat = new THREE.MeshBasicMaterial({ color: '#5e3d06' });
+    const hornRingMat = new THREE.MeshBasicMaterial({
+      color: '#ffe048',
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide
+    });
+    const hornRing = new THREE.Mesh(new THREE.RingGeometry(4.5, 6.2, 16), hornRingMat);
+    hornRing.rotation.y = Math.PI / 2;
+    hornRing.position.set((a.type === 'truck' ? 36 : L / 2 + 3), 6.5, 0);
+    gr.add(hornRing);
+
+    const wheels = [];
+    const frontPivots = [];
+    const addWheel = (wx, wy, wz, rad, wid, isFront = false) => {
+      const wGroup = new THREE.Group();
+      wGroup.position.set(wx, wy, wz);
+      const spinGroup = new THREE.Group();
+      const tire = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, wid, 16), new THREE.MeshStandardMaterial({ color: '#16191f', roughness: 0.85, metalness: 0.08 }));
+      tire.rotation.x = Math.PI / 2;
+      tire.castShadow = true;
+      spinGroup.add(tire);
+      // Pelek / hub roda
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(rad * 0.54, rad * 0.54, wid + 0.35, 10), chromeMat);
+      rim.rotation.x = Math.PI / 2;
+      spinGroup.add(rim);
+      wGroup.add(spinGroup);
+      gr.add(wGroup);
+      wheels.push(spinGroup);
+      if (isFront) frontPivots.push(wGroup);
+    };
+
+    if (a.type === 'moto') {
+      addWheel(-6.2, 3.4, 0, 3.4, 2.3, false);
+      addWheel(6.2, 3.4, 0, 3.4, 2.3, true);
+      // Sasis bawah, knalpot & tangki
+      add(bx(14.5, 2.6, 3.4), trimMat, -0.5, 4.6, 0, gr);
+      add(bx(10.5, 1.5, 1.4), chromeMat, -3.5, 3.6, 2.4, gr);
+      add(bx(6.8, 3.2, 5.4), bm, 1.2, 7.6, 0, gr);
+      // Stang kemudi & lampu depan
+      add(bx(1.6, 5.5, 10.6), chromeMat, 5.2, 9.6, 0, gr);
+      add(new THREE.SphereGeometry(1.7, 10, 8), headLightMat, 8.8, 8.8, 0, gr, false, false);
+      // Pengendara & helm
+      add(bx(5.4, 6.2, 5.2), new THREE.MeshStandardMaterial({ color: '#2b3648', roughness: 0.75 }), -1.4, 10.6, 0, gr);
+      add(new THREE.SphereGeometry(2.6, 12, 10), new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.35, metalness: 0.15 }), 0.6, 15.6, 0, gr);
+      add(bx(1.2, 1.5, 4.2), gm, 2.8, 15.8, 0, gr, false, false);
+    } else {
+      const bl = a.type === 'truck' ? 24 : L, ox = a.type === 'truck' ? 24 : 0;
+      const wheelR = a.type === 'truck' || a.type === 'bus' ? 4.2 : 3.5;
+      const wheelW = a.type === 'truck' || a.type === 'bus' ? 3.2 : 2.6;
+      [ox - bl * 0.29, ox + bl * 0.29].forEach((wx, wIdx) => {
+        const isFront = wIdx === 1;
+        addWheel(wx, wheelR, -w / 2 - 0.6, wheelR, wheelW, isFront);
+        addWheel(wx, wheelR, w / 2 + 0.6, wheelR, wheelW, isFront);
+      });
+      // Bodi bawah & bumper
+      add(bx(bl, 6.4, w), bm, ox, 6.4, 0, gr);
+      add(bx(bl + 1.2, 2.2, w + 0.8), trimMat, ox, 4.2, 0, gr);
+      if (a.type === 'car') {
+        // Kabin & atap berkontur
+        add(bx(bl * 0.54, 5.4, w * 0.84), bm, ox - 2.2, 11.8, 0, gr);
+        add(bx(bl * 0.48, 4.2, w * 0.78), gm, ox - 1.8, 11.6, 0, gr);
+        add(bx(bl * 0.28, 1.2, w * 0.74), bm, ox - 3.6, 14.6, 0, gr);
+        // Spion samping
+        add(bx(2.4, 2.2, 2.6), trimMat, ox + bl * 0.1, 9.4, -w / 2 - 1.1, gr);
+        add(bx(2.4, 2.2, 2.6), trimMat, ox + bl * 0.1, 9.4, w / 2 + 1.1, gr);
+      } else if (a.type === 'bus') {
+        add(bx(bl * 0.94, 7.6, w * 0.94), bm, ox, 13.2, 0, gr);
+        add(bx(bl * 0.88, 4.4, w * 0.96), gm, ox, 13.8, 0, gr);
+        // Unit AC atap bus
+        add(bx(11, 2.2, 11), chromeMat, ox - 5, 17.8, 0, gr);
+        add(bx(11, 2.2, 11), chromeMat, ox + 7, 17.8, 0, gr);
+      } else {
+        // Kabin truk traktor
+        add(bx(bl * 0.88, 6.2, w * 0.9), bm, ox + 0.6, 12.2, 0, gr);
+        add(bx(bl * 0.82, 4.0, w * 0.92), gm, ox + 1.4, 12.6, 0, gr);
+        add(bx(2.8, 2.4, 2.8), trimMat, ox + bl * 0.14, 10.2, -w / 2 - 1.2, gr);
+        add(bx(2.8, 2.4, 2.8), trimMat, ox + bl * 0.14, 10.2, w / 2 + 1.2, gr);
+      }
+      // Lampu depan & belakang + sein
+      add(bx(1.2, 2.2, 4.0), headLightMat, ox + bl / 2 + 0.2, 6.6, -w * 0.29, gr, false, false);
+      add(bx(1.2, 2.2, 4.0), headLightMat, ox + bl / 2 + 0.2, 6.6, w * 0.29, gr, false, false);
+      add(bx(1.8, 2.4, 4.4), brakeMat, ox - bl / 2 - 0.3, 6.8, -w * 0.29, gr, false, false);
+      add(bx(1.8, 2.4, 4.4), brakeMat, ox - bl / 2 - 0.3, 6.8, w * 0.29, gr, false, false);
+      add(bx(2.6, 2.0, 2.6), blinkMat, ox + bl * 0.42, 7.2, -w / 2 - 0.2, gr, false, false);
+      add(bx(2.6, 2.0, 2.6), blinkMat, ox + bl * 0.42, 7.2, w / 2 + 0.2, gr, false, false);
+    }
+
+    sc.add(gr);
+    let tr = null;
+    if (a.type === 'truck') {
+      tr = new THREE.Group();
+      const cargoBody = new THREE.Mesh(bx(48, 14.5, 20.5), new THREE.MeshStandardMaterial({
+        color: a.crashed ? '#333' : a.cargo,
+        roughness: 0.55,
+        metalness: 0.18
+      }));
+      cargoBody.castShadow = true;
+      cargoBody.receiveShadow = true;
+      tr.add(cargoBody);
+      // Rusuk samping kontainer
+      for (let rx = -18; rx <= 18; rx += 6) {
+        const rib = new THREE.Mesh(bx(1.1, 13.8, 21.1), trimMat);
+        rib.position.set(rx, 0, 0);
+        tr.add(rib);
+      }
+      [-14, 14].forEach(twx => {
+        [-11.4, 11.4].forEach(twz => {
+          const twh = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.2, 3.2, 14), new THREE.MeshStandardMaterial({ color: '#16191f', roughness: 0.85 }));
+          twh.rotation.x = Math.PI / 2;
+          twh.position.set(twx, -9.2, twz);
+          twh.castShadow = true;
+          tr.add(twh);
+          const trim = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 3.5, 10), chromeMat);
+          trim.rotation.x = Math.PI / 2;
+          trim.position.set(twx, -9.2, twz);
+          tr.add(trim);
+        });
+      });
+      sc.add(tr);
+    }
+    const u = { body: bm, dead: a.crashed, tr, brakeMat, blinkMat, hornRing, wheels, frontPivots };
+    gr.userData = u;
+    veh.set(a, gr);
+    return gr;
+  };
+
+  const st = { az: 0.25, el: 0.88, r: 2450, tx: 0, ty: 0, tz: 0, w: 0, h: 0 };
+  const activePointers3d = new Map();
+  let drag = null, lastPinchDist3d = null, lastPinchMid3d = null;
+  const heldKeys3d = new Set();
+
+  // Helper geser titik pandang (target) kamera 3D mengikuti arah horizontal layar
+  function panCamera3d(screenDx, screenDy, scaleFactor = 1) {
+    const panSpeed = Math.max(0.45, st.r * 0.00145) * scaleFactor;
+    const rightX = Math.cos(st.az);
+    const rightZ = -Math.sin(st.az);
+    const fwdX = -Math.sin(st.az);
+    const fwdZ = -Math.cos(st.az);
+
+    st.tx += (-rightX * screenDx + fwdX * screenDy) * panSpeed;
+    st.tz += (-rightZ * screenDx + fwdZ * screenDy) * panSpeed;
+    st.tx = Math.max(-2600, Math.min(2600, st.tx));
+    st.tz = Math.max(-2200, Math.min(2200, st.tz));
+  }
+
+  box.addEventListener('contextmenu', e => e.preventDefault());
+
+  box.addEventListener('pointerdown', e => {
+    activePointers3d.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    box.setPointerCapture(e.pointerId);
+    if (activePointers3d.size === 1) {
+      const isPanButton = e.button === 2 || e.button === 1 || e.shiftKey;
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, mode: isPanButton ? 'pan' : 'orbit' };
+      box.classList.add('dragging');
+    } else if (activePointers3d.size === 2) {
+      const pts = [...activePointers3d.values()];
+      lastPinchDist3d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      lastPinchMid3d = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+      drag = null;
+    }
+  });
+
+  box.addEventListener('pointermove', e => {
+    if (!activePointers3d.has(e.pointerId)) return;
+    activePointers3d.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers3d.size === 2) {
+      const pts = [...activePointers3d.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+      if (lastPinchDist3d && dist > 0) {
+        st.r = Math.max(90, Math.min(5500, st.r * (lastPinchDist3d / dist)));
+      }
+      if (lastPinchMid3d) {
+        panCamera3d(mid.x - lastPinchMid3d.x, mid.y - lastPinchMid3d.y, 1.15);
+      }
+      lastPinchDist3d = dist;
+      lastPinchMid3d = mid;
+      return;
+    }
+    if (drag && drag.id === e.pointerId) {
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      if (drag.mode === 'pan') {
+        if (povRoadMode) {
+          povYawOffset -= dx * 0.005;
+          povPitchOffset = Math.max(-0.35, Math.min(0.45, povPitchOffset + dy * 0.004));
+        } else {
+          panCamera3d(dx, dy, 1.0);
+        }
+      } else {
+        if (povRoadMode) {
+          povYawOffset -= dx * 0.006;
+          povPitchOffset = Math.max(-0.35, Math.min(0.45, povPitchOffset + dy * 0.0045));
+        } else {
+          st.az -= dx * 0.0065;
+          st.el = Math.max(0.08, Math.min(1.52, st.el + dy * 0.0065));
+        }
+      }
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, mode: drag.mode };
+    }
+  });
+
+  const endPointer3d = e => {
+    activePointers3d.delete(e.pointerId);
+    if (activePointers3d.size < 2) {
+      lastPinchDist3d = null;
+      lastPinchMid3d = null;
+    }
+    if (!drag || drag.id === e.pointerId) {
+      drag = null;
+      box.classList.remove('dragging');
+    }
+  };
+  box.addEventListener('pointerup', endPointer3d);
+  box.addEventListener('pointercancel', endPointer3d);
+  box.addEventListener('wheel', e => {
+    e.preventDefault();
+    st.r = Math.max(90, Math.min(5500, st.r + e.deltaY * 1.15));
+  }, { passive: false });
+
+  // Navigasi keyboard bebas saat mode 3D aktif (W/A/S/D atau Panah untuk menggeser posisi pandang, Q/E naik-turun target)
+  const onKeyDown3d = e => {
+    if (!view3d) return;
+    const tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    const k = e.key.toLowerCase();
+    if (['w', 'a', 's', 'd', 'q', 'e', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) {
+      heldKeys3d.add(k);
+    }
+  };
+  const onKeyUp3d = e => {
+    heldKeys3d.delete(e.key.toLowerCase());
+  };
+  window.addEventListener('keydown', onKeyDown3d);
+  window.addEventListener('keyup', onKeyUp3d);
+
+  return {
+    getCameraPos() {
+      return { x: st.tx + W / 2, y: st.tz + H / 2 };
+    },
+    zoomBy(factor) {
+      st.r = Math.max(90, Math.min(5500, st.r * factor));
+    },
+    focusTarget(target) {
+      if (target === 'ALL') {
+        st.tx = 0; st.ty = 0; st.tz = 0; st.r = 2450;
+      } else {
+        const s = INTS[target];
+        if (!s) return;
+        st.tx = s.cx - W / 2;
+        st.ty = 12;
+        st.tz = s.cy - H / 2;
+        st.r = 620;
+      }
+    },
+    render() {
+      if (heldKeys3d.size > 0) {
+        const moveStep = Math.max(6, st.r * 0.012);
+        const fwdX = -Math.sin(st.az);
+        const fwdZ = -Math.cos(st.az);
+        const rightX = Math.cos(st.az);
+        const rightZ = -Math.sin(st.az);
+        let mx = 0, mz = 0;
+        if (heldKeys3d.has('w') || heldKeys3d.has('arrowup')) { mx += fwdX; mz += fwdZ; }
+        if (heldKeys3d.has('s') || heldKeys3d.has('arrowdown')) { mx -= fwdX; mz -= fwdZ; }
+        if (heldKeys3d.has('d') || heldKeys3d.has('arrowright')) { mx += rightX; mz += rightZ; }
+        if (heldKeys3d.has('a') || heldKeys3d.has('arrowleft')) { mx -= rightX; mz -= rightZ; }
+        if (mx !== 0 || mz !== 0) {
+          const inv = 1 / Math.hypot(mx, mz);
+          st.tx = Math.max(-2600, Math.min(2600, st.tx + mx * inv * moveStep));
+          st.tz = Math.max(-2200, Math.min(2200, st.tz + mz * inv * moveStep));
+        }
+        if (heldKeys3d.has('e')) st.ty = Math.max(-40, Math.min(260, st.ty + moveStep * 0.45));
+        if (heldKeys3d.has('q')) st.ty = Math.max(-40, Math.min(260, st.ty - moveStep * 0.45));
+      }
+
+      const w = box.clientWidth, h = box.clientHeight;
+      if (w && (w !== st.w || h !== st.h)) {
+        R.setSize(w, h, false);
+        cam.aspect = w / h;
+        cam.updateProjectionMatrix();
+        st.w = w; st.h = h;
+      }
+
+      intBadges.forEach(b => {
+        const isSel = b.id === selectedInt;
+        if (b.lastSel !== isSel) {
+          b.lastSel = isSel;
+          const sInfo = INTS[b.id];
+          b.badgeMat.map = makeSignTexture(
+            [`${sInfo.short}${isSel ? ' [HMI]' : ''}`],
+            isSel ? '#1d4ed8' : '#14202b',
+            '#ffffff',
+            '#93c5fd',
+            192,
+            68
+          );
+          b.badgeMat.needsUpdate = true;
+        }
+      });
+
+      lamps.forEach(l => {
+        const o = cur(l.intId).out || OUTS_4PHASE[2];
+        const isAlwaysRight = $('cfg-left-turn').value === 'ALWAYS';
+        if (l.arrowBulb) {
+          l.arrowBulb.material.color.set(isAlwaysRight ? '#4ee07a' : '#ff4b45');
+        }
+        l.ls.forEach((pair, k) => {
+          const col = o[l.i + k] ? ['#ff4b45', '#ffc83a', '#4ee07a'][k] : '#333';
+          pair.top.material.color.set(col);
+          pair.low.material.color.set(col);
+        });
+      });
+
+      cars.forEach(a => {
+        const gr = veh.get(a) || mk(a);
+        const pitch = a.crashed ? 0 : (a.braking ? -0.025 : 0);
+        const roll = a.crashed ? 0 : (a.path ? (a.turnIntent === 'LEFT' ? -0.035 : 0.035) : 0);
+        gr.position.set(a.x - W / 2, 0, a.y - H / 2);
+        gr.rotation.set(roll, -a.angle, pitch);
+        if (gr.userData.wheels) {
+          const spinAng = -((a.x * 0.14 + a.y * 0.14) % (Math.PI * 2));
+          gr.userData.wheels.forEach(wh => { wh.rotation.z = spinAng; });
+        }
+        if (gr.userData.frontPivots) {
+          const steer = (!a.crashed && a.path) ? (a.turnIntent === 'LEFT' ? 0.35 : a.turnIntent === 'RIGHT' ? -0.35 : 0) : 0;
+          gr.userData.frontPivots.forEach(fp => { fp.rotation.y = steer; });
+        }
+        if (a.crashed && !gr.userData.dead) {
+          gr.userData.body.color.set('#333');
+          gr.userData.dead = true;
+        }
+        if (gr.userData.brakeMat) {
+          gr.userData.brakeMat.color.set(a.braking && !a.crashed ? '#ff2424' : '#591111');
+        }
+        if (gr.userData.blinkMat) {
+          const turning = !a.crashed && a.turnIntent !== 'STRAIGHT' && !a.path && Math.floor(performance.now() / 250) % 2 === 0;
+          gr.userData.blinkMat.color.set(turning ? '#ffaa00' : '#5e3d06');
+        }
+        if (gr.userData.hornRing) {
+          const activeHorn = !a.crashed && (a.hornFlash || 0) > 0;
+          gr.userData.hornRing.material.opacity = activeHorn ? Math.min(0.95, a.hornFlash * 3.4) : 0;
+          const scRing = activeHorn ? 1 + (0.28 - a.hornFlash) * 4.5 : 1;
+          gr.userData.hornRing.scale.set(scRing, scRing, 1);
+        }
+        const tr = gr.userData.tr;
+        if (tr) {
+          const hx = a.x + Math.cos(a.angle) * 12, hy = a.y + Math.sin(a.angle) * 12;
+          tr.position.set(hx - Math.cos(a.ta) * 24 - W / 2, 13.4, hy - Math.sin(a.ta) * 24 - H / 2);
+          tr.rotation.y = -a.ta;
+        }
+      });
+
+      veh.forEach((gr, a) => {
+        if (!cars.includes(a)) {
+          sc.remove(gr);
+          if (gr.userData.tr) sc.remove(gr.userData.tr);
+          veh.delete(a);
+        }
+      });
+
+      pedestrians.forEach(p => {
+        const gr = pedMeshes.get(p) || mkPed(p);
+        const isRunning = (p.runTimer || 0) > 0;
+        const baseY = p.state === 'CROSSING' ? 1.2 : 3.2;
+        const bob = p.state === 'WAITING' ? 0 : Math.abs(Math.sin(p.stride)) * (isRunning ? 1.65 : 0.85);
+        gr.position.set(p.x - W / 2, baseY + bob, p.y - H / 2);
+        gr.rotation.y = -p.angle;
+        const sw = p.state === 'WAITING' ? 0 : Math.sin(p.stride) * (isRunning ? 1.05 : 0.62);
+        gr.userData.legL.rotation.z = sw;
+        gr.userData.legR.rotation.z = -sw;
+        gr.userData.armL.rotation.z = -sw * (isRunning ? 1.15 : 0.75);
+        gr.userData.armR.rotation.z = sw * (isRunning ? 1.15 : 0.75);
+      });
+
+      pedMeshes.forEach((gr, p) => {
+        if (!pedestrians.includes(p)) {
+          sc.remove(gr);
+          pedMeshes.delete(p);
+        }
+      });
+
+      cam.position.set(
+        st.tx + st.r * Math.sin(st.az) * Math.cos(st.el),
+        Math.max(12, st.ty + st.r * Math.sin(st.el)),
+        st.tz + st.r * Math.cos(st.az) * Math.cos(st.el)
+      );
+      cam.lookAt(st.tx, st.ty, st.tz);
+      R.render(sc, cam);
+    },
+    renderPov(povPose) {
+      const w = box.clientWidth, h = box.clientHeight;
+      if (w && (w !== st.w || h !== st.h)) {
+        R.setSize(w, h, false);
+        cam.aspect = w / h;
+        cam.updateProjectionMatrix();
+        st.w = w; st.h = h;
+      }
+
+      intBadges.forEach(b => {
+        const isSel = b.id === selectedInt;
+        if (b.lastSel !== isSel) {
+          b.lastSel = isSel;
+          const sInfo = INTS[b.id];
+          b.badgeMat.map = makeSignTexture(
+            [`${sInfo.short}${isSel ? ' [HMI]' : ''}`],
+            isSel ? '#1d4ed8' : '#14202b',
+            '#ffffff',
+            '#93c5fd',
+            192,
+            68
+          );
+          b.badgeMat.needsUpdate = true;
+        }
+      });
+
+      lamps.forEach(l => {
+        const o = cur(l.intId).out || OUTS_4PHASE[2];
+        const isAlwaysRight = $('cfg-left-turn').value === 'ALWAYS';
+        if (l.arrowBulb) {
+          l.arrowBulb.material.color.set(isAlwaysRight ? '#4ee07a' : '#ff4b45');
+        }
+        l.ls.forEach((pair, k) => {
+          const col = o[l.i + k] ? ['#ff4b45', '#ffc83a', '#4ee07a'][k] : '#333';
+          pair.top.material.color.set(col);
+          pair.low.material.color.set(col);
+        });
+      });
+
+      cars.forEach(a => {
+        const gr = veh.get(a) || mk(a);
+        const pitch = a.crashed ? 0 : (a.braking ? -0.025 : 0);
+        const roll = a.crashed ? 0 : (a.path ? (a.turnIntent === 'LEFT' ? -0.035 : 0.035) : 0);
+        gr.position.set(a.x - W / 2, 0, a.y - H / 2);
+        gr.rotation.set(roll, -a.angle, pitch);
+        if (gr.userData.wheels) {
+          const spinAng = -((a.x * 0.14 + a.y * 0.14) % (Math.PI * 2));
+          gr.userData.wheels.forEach(wh => { wh.rotation.z = spinAng; });
+        }
+        if (gr.userData.frontPivots) {
+          const steer = (!a.crashed && a.path) ? (a.turnIntent === 'LEFT' ? 0.35 : a.turnIntent === 'RIGHT' ? -0.35 : 0) : 0;
+          gr.userData.frontPivots.forEach(fp => { fp.rotation.y = steer; });
+        }
+        if (a.crashed && !gr.userData.dead) {
+          gr.userData.body.color.set('#333');
+          gr.userData.dead = true;
+        }
+        if (gr.userData.brakeMat) {
+          gr.userData.brakeMat.color.set(a.braking && !a.crashed ? '#ff2424' : '#591111');
+        }
+        if (gr.userData.blinkMat) {
+          const turning = !a.crashed && a.turnIntent !== 'STRAIGHT' && !a.path && Math.floor(performance.now() / 250) % 2 === 0;
+          gr.userData.blinkMat.color.set(turning ? '#ffaa00' : '#5e3d06');
+        }
+        if (gr.userData.hornRing) {
+          const activeHorn = !a.crashed && (a.hornFlash || 0) > 0;
+          gr.userData.hornRing.material.opacity = activeHorn ? Math.min(0.95, a.hornFlash * 3.4) : 0;
+          const scRing = activeHorn ? 1 + (0.28 - a.hornFlash) * 4.5 : 1;
+          gr.userData.hornRing.scale.set(scRing, scRing, 1);
+        }
+        const tr = gr.userData.tr;
+        if (tr) {
+          const hx = a.x + Math.cos(a.angle) * 12, hy = a.y + Math.sin(a.angle) * 12;
+          tr.position.set(hx - Math.cos(a.ta) * 24 - W / 2, 13.4, hy - Math.sin(a.ta) * 24 - H / 2);
+          tr.rotation.y = -a.ta;
+        }
+      });
+
+      veh.forEach((gr, a) => {
+        if (!cars.includes(a)) {
+          sc.remove(gr);
+          if (gr.userData.tr) sc.remove(gr.userData.tr);
+          veh.delete(a);
+        }
+      });
+
+      pedestrians.forEach(p => {
+        const gr = pedMeshes.get(p) || mkPed(p);
+        const isRunning = (p.runTimer || 0) > 0;
+        const baseY = p.state === 'CROSSING' ? 1.2 : 3.2;
+        const bob = p.state === 'WAITING' ? 0 : Math.abs(Math.sin(p.stride)) * (isRunning ? 1.65 : 0.85);
+        gr.position.set(p.x - W / 2, baseY + bob, p.y - H / 2);
+        gr.rotation.y = -p.angle;
+        const sw = p.state === 'WAITING' ? 0 : Math.sin(p.stride) * (isRunning ? 1.05 : 0.62);
+        gr.userData.legL.rotation.z = sw;
+        gr.userData.legR.rotation.z = -sw;
+        gr.userData.armL.rotation.z = -sw * (isRunning ? 1.15 : 0.75);
+        gr.userData.armR.rotation.z = sw * (isRunning ? 1.15 : 0.75);
+      });
+
+      pedMeshes.forEach((gr, p) => {
+        if (!pedestrians.includes(p)) {
+          sc.remove(gr);
+          pedMeshes.delete(p);
+        }
+      });
+
+      const eyeX = povPose.x - W / 2;
+      const eyeZ = povPose.y - H / 2;
+      const eyeY = povPose.isPedestrian
+        ? (povPose.eyeHeight || 16.5) + Math.sin(performance.now() * 0.015) * 0.35
+        : 22 + Math.sin(performance.now() * 0.012) * 0.35;
+      const dirX = Math.cos(povPose.angle);
+      const dirZ = Math.sin(povPose.angle);
+      const lookDist = povPose.isPedestrian ? 130 : 180;
+
+      st.tx = eyeX + dirX * lookDist;
+      st.tz = eyeZ + dirZ * lookDist;
+      st.ty = Math.max(6, eyeY - Math.tan(povPitchOffset) * lookDist);
+
+      cam.position.set(eyeX, eyeY, eyeZ);
+      cam.lookAt(st.tx, st.ty, st.tz);
+      R.render(sc, cam);
+    }
+  };
 }
 
 /* ===== LOOP UTAMA ===== */
 let last = performance.now(), acc = 0;
 function frame(t) {
-  const dt = Math.min(.1, (t - last) / 1000); last = t;
-  acc += dt; while (acc >= .1) { if (!(remote && S)) plcScan(.1); acc -= .1; }
-  const s = cur();
-  hmi(s); moveCars(dt, s);
-  drawScene(); drawCars(); drawTrafficLights(s.out);
+  const dt = Math.min(0.1, (t - last) / 1000);
+  last = t;
+  acc += dt;
+  while (acc >= 0.1) {
+    if (!remote) plcScan(0.1); else { scanFieldInputs(0.1); sendInputs(0.1); }
+    acc -= 0.1;
+  }
+
+  const sSelected = cur(selectedInt);
+  hmi(sSelected);
+  moveCars(dt);
+  movePedestrians(dt);
+  const povPose = updateRoadPovState(dt);
+
+  if (view3d && T3) {
+    if (povRoadMode && povPose) {
+      T3.renderPov(povPose);
+    } else {
+      T3.render();
+    }
+  } else {
+    if (povRoadMode && povPose) {
+      cam2d.x = Math.max(0, Math.min(W, povPose.x));
+      cam2d.y = Math.max(0, Math.min(H, povPose.y));
+    }
+    drawScene();
+    drawCars();
+    drawPedestrians2d();
+    drawTrafficLights2d();
+  }
   requestAnimationFrame(frame);
 }
+
 updatePLCConfig();
+updateDensity();
+setPovButtonState();
+selectInt(0);
 connect();
 requestAnimationFrame(frame);
 </script>
